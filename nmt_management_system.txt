@@ -1,0 +1,539 @@
+Phác Thảo Thiết Kế Chi Tiết Hệ Thống Web Quản Lý Release Model NMT
+
+I. Tổng Quan Hệ Thống (Giữ nguyên)
+
+Hệ thống web này nhằm mục đích giúp team NMT quản lý, lưu trữ, và theo dõi kết quả training model (BLEU, COMET) qua các phiên bản release, hỗ trợ nhiều cặp ngôn ngữ khác nhau (ví dụ: en-th, th-en, en-vi, vi-en, ko-vi, vi-ko). Nó sẽ cho phép các thành viên dễ dàng cập nhật kết quả, so sánh hiệu suất giữa các mô hình theo từng cặp ngôn ngữ, và tạo release notes một cách hiệu quả.
+Người dùng mục tiêu: Các thành viên trong team NMT, người quản lý release.
+
+II. Kiến Trúc Hệ Thống
+
+A. Web UI Frontend (Giao diện người dùng web)
+
+Công nghệ đề xuất:
+
+Framework/Thư viện JavaScript: React (với Create React App hoặc Vite) hoặc Vue.js (với Vue CLI hoặc Vite).
+Quản lý State (Tùy chọn, nhưng khuyến nghị cho ứng dụng phức tạp):
+React: Redux Toolkit, Zustand, hoặc React Context API.
+Vue.js: Pinia hoặc Vuex.
+Styling:
+CSS thuần (với BEM hoặc kiến trúc CSS khác).
+CSS Modules.
+Styled Components (cho React).
+Tailwind CSS (Utility-first CSS framework).
+Thư viện component UI: Material-UI (MUI), Ant Design, Bootstrap (React-Bootstrap/Vue-Bootstrap).
+HTTP Client: Axios hoặc Fetch API tích hợp sẵn.
+Routing:
+React: React Router DOM.
+Vue.js: Vue Router.
+Thư viện biểu đồ: Chart.js, Recharts (cho React), ECharts.
+Form Handling (Tùy chọn): Formik & Yup (cho React), Vuelidate (cho Vue.js).
+Text Editor (cho Release Notes): TinyMCE, CKEditor, Quill, hoặc một trình soạn thảo Markdown như react-markdown với remark-gfm.
+Các thành phần và luồng chi tiết:
+
+Trang Đăng nhập/Đăng ký (Authentication):
+
+Layout: Giao diện đơn giản, tập trung vào form.
+Form Đăng nhập (/login):
+Input username: type="text", required, placeholder="Tên đăng nhập".
+Input password: type="password", required, placeholder="Mật khẩu".
+Button "Đăng nhập": type="submit". Khi click, gọi API POST /api/auth/login.
+Hiển thị thông báo lỗi chung (ví dụ: "Tên đăng nhập hoặc mật khẩu không đúng") hoặc lỗi cụ thể từ API.
+(Tùy chọn) Liên kết "Quên mật khẩu?".
+(Tùy chọn) Liên kết "Đăng ký tài khoản mới" nếu cho phép tự đăng ký.
+(Tùy chọn) Form Đăng ký (/register):
+Input username: type="text", required, placeholder="Tên đăng nhập". Validation: kiểm tra độ dài, ký tự cho phép, gọi API kiểm tra tính duy nhất khi onBlur.
+Input email: type="email", required, placeholder="Địa chỉ email". Validation: định dạng email, gọi API kiểm tra tính duy nhất khi onBlur.
+Input password: type="password", required, placeholder="Mật khẩu". Validation: độ dài tối thiểu, yêu cầu ký tự đặc biệt/số/chữ hoa (hiển thị gợi ý).
+Input confirm_password: type="password", required, placeholder="Xác nhận mật khẩu". Validation: phải trùng khớp với password.
+Button "Đăng ký": type="submit". Khi click, gọi API POST /api/auth/register.
+Hiển thị thông báo lỗi cho từng trường hoặc lỗi chung.
+Quản lý Session/Token:
+Sau khi đăng nhập thành công, lưu trữ JWT (access token) vào localStorage (để duy trì đăng nhập qua các phiên) hoặc sessionStorage (đăng xuất khi đóng tab).
+Tất cả các yêu cầu API sau đó phải đính kèm token này trong Header Authorization: Bearer <token>.
+Xử lý khi token hết hạn (API trả về 401): tự động chuyển hướng người dùng về trang đăng nhập, hoặc thử làm mới token nếu có refresh token.
+Đăng xuất:
+Nút "Đăng xuất" (thường ở Header hoặc User Menu).
+Khi click: xóa token khỏi localStorage/sessionStorage, gọi API POST /api/auth/logout (nếu backend hỗ trợ blacklist token), chuyển hướng về trang /login.
+Dashboard Chính (/ hoặc /dashboard sau khi đăng nhập):
+
+Layout: Bố cục tổng quan, có thể chia thành các card/widget.
+Hiển thị tổng quan nhanh:
+Số liệu: "Số cặp ngôn ngữ", "Tổng số phiên bản model", "Release mới trong 30 ngày". Dữ liệu lấy từ các API tương ứng (ví dụ: GET /api/language-pairs để đếm, GET /api/model-versions với filter ngày).
+Danh sách "Release gần đây" (5-10 mục): Tên phiên bản, Cặp ngôn ngữ, Ngày release. Click vào mỗi mục sẽ điều hướng đến trang chi tiết phiên bản model đó.
+Biểu đồ tóm tắt nổi bật (ví dụ):
+Số lượng phiên bản theo cặp ngôn ngữ: Biểu đồ cột. Trục X: Tên cặp ngôn ngữ. Trục Y: Số lượng phiên bản. Dữ liệu từ GET /api/model-versions?group_by=lang_pair.
+(Tùy chọn) Tiến độ điểm COMET trung bình (GRPO+ORPO) của cặp ngôn ngữ chính qua 6 tháng: Biểu đồ đường. Trục X: Tháng. Trục Y: Điểm COMET trung bình. Dữ liệu cần API tổng hợp.
+Menu điều hướng chính (Sidebar hoặc Top Navbar):
+"Dashboard" (link về trang này).
+"Quản lý Cặp Ngôn Ngữ" (link tới /language-pairs).
+"Quản lý Phiên bản Model" (link tới /model-versions).
+"Quản lý Tập Testset" (link tới /testsets).
+"Trực quan hóa Dữ liệu" (link tới /visualizations).
+**(Tùy chọn) "Quản lý Người dùng" (link tới /users, chỉ hiển thị cho role admin).
+User Profile/Dropdown: Chứa tên người dùng, link tới "Thông tin tài khoản" (nếu có), nút "Đăng xuất".
+Quản lý Cặp Ngôn Ngữ (Language Pairs - /language-pairs):
+
+Giao diện danh sách:
+Tiêu đề: "Danh sách Cặp Ngôn Ngữ".
+Nút "Thêm mới Cặp Ngôn Ngữ" (chỉ hiển thị nếu có quyền).
+Ô tìm kiếm: Input type="text", placeholder="Tìm theo mã nguồn, mã đích, mô tả". Khi nhập, tự động filter danh sách (client-side) hoặc gọi API với query search (server-side).
+Bảng hiển thị:
+Cột: "STT", "Mã Ngôn Ngữ Nguồn (source_language_code)", "Mã Ngôn Ngữ Đích (target_language_code)", "Mô tả (description)", "Ngày Tạo (created_at, định dạng dd/mm/yyyy)", "Hành động".
+Hành động: Nút "Sửa" (icon bút chì), Nút "Xóa" (icon thùng rác) - chỉ hiển thị nếu có quyền.
+Phân trang nếu danh sách dài.
+Chức năng:
+Thêm mới Cặp Ngôn Ngữ (Modal/Dialog hoặc trang riêng /language-pairs/new):
+Form với các trường:
+source_language_code: Input type="text", required. (Ví dụ: "en", "vi").
+target_language_code: Input type="text", required. (Ví dụ: "th", "ko").
+description: Textarea, optional.
+Nút "Lưu" và "Hủy".
+Khi "Lưu": Gọi POST /api/language-pairs. Validate cặp (source, target) không được trùng. Sau khi thành công, đóng modal/chuyển hướng và làm mới danh sách.
+Chỉnh sửa Cặp Ngôn Ngữ (Modal/Dialog hoặc trang riêng /language-pairs/edit/{id}):
+Form tương tự "Thêm mới", dữ liệu được điền sẵn từ GET /api/language-pairs/{id}.
+Chỉ cho phép sửa description. source_language_code và target_language_code nên là read-only.
+Khi "Lưu": Gọi PUT /api/language-pairs/{id}. Sau khi thành công, đóng modal/chuyển hướng và làm mới danh sách.
+Xóa Cặp Ngôn Ngữ:
+Khi click nút "Xóa": Hiển thị modal xác nhận: "Bạn có chắc chắn muốn xóa cặp ngôn ngữ '{source_code} -> {target_code}'? Tất cả các phiên bản model, kết quả training và release notes liên quan cũng sẽ bị xóa."
+Nếu xác nhận: Gọi DELETE /api/language-pairs/{id}. Sau khi thành công, làm mới danh sách.
+Quản lý Phiên bản Model (Model Versions - /model-versions):
+
+Giao diện danh sách:
+Tiêu đề: "Danh sách Phiên bản Model".
+Bộ lọc: Dropdown select "Chọn Cặp Ngôn Ngữ": required. Lấy danh sách từ GET /api/language-pairs. Khi chọn một cặp, gọi GET /api/model-versions?lang_pair_id={selected_id} để tải danh sách phiên bản.
+Nút "Thêm mới Phiên bản" (chỉ enabled khi đã chọn cặp ngôn ngữ và user có quyền).
+Bảng hiển thị (chỉ hiển thị khi đã chọn cặp ngôn ngữ):
+Cột: "STT", "Tên Phiên bản (version_name)", "Ngày Release (release_date, định dạng dd/mm/yyyy)", "Mô tả Ngắn (description)", "Hành động".
+Mỗi "Tên Phiên bản" là một link điều hướng đến trang chi tiết /model-versions/{version_id}.
+Hành động: Nút "Sửa" (icon bút chì), Nút "Xóa" (icon thùng rác) - chỉ hiển thị nếu có quyền.
+Phân trang nếu danh sách dài.
+Trang Chi tiết Phiên bản Model (/model-versions/{id}):
+Hiển thị thông tin chung: Tên phiên bản, Cặp ngôn ngữ (ví dụ: "en -> th"), Ngày release, Mô tả chi tiết. Nút "Chỉnh sửa thông tin phiên bản" (nếu có quyền).
+Tabs Điều Hướng:
+Tab "Kết quả Training" (mặc định active).
+Tab "Release Notes".
+Chức năng:
+Thêm mới Phiên bản (Modal/Dialog hoặc trang riêng /model-versions/new?lang_pair_id={selected_id}):
+Form với các trường:
+lang_pair_id: Read-only hoặc pre-selected từ trang danh sách.
+version_name: Input type="text", required. (Ví dụ: "v2.1.0", "2025-Q1-Hotfix").
+release_date: Input type="date", optional.
+description: Textarea, optional.
+Nút "Lưu" và "Hủy".
+Khi "Lưu": Gọi POST /api/model-versions. Validate version_name duy nhất cho lang_pair_id. Sau khi thành công, đóng modal/chuyển hướng và làm mới danh sách (hoặc chuyển đến trang chi tiết phiên bản vừa tạo).
+Chỉnh sửa thông tin Phiên bản (Modal/Dialog hoặc từ trang chi tiết):
+Form tương tự "Thêm mới", dữ liệu được điền sẵn từ GET /api/model-versions/{id}.
+Khi "Lưu": Gọi PUT /api/model-versions/{id}. Sau khi thành công, cập nhật thông tin trên UI.
+Xóa Phiên bản:
+Khi click nút "Xóa": Hiển thị modal xác nhận: "Bạn có chắc chắn muốn xóa phiên bản '{version_name}'? Hành động này sẽ xóa cả kết quả training và release notes liên quan."
+Nếu xác nhận: Gọi DELETE /api/model-versions/{id}. Sau khi thành công, chuyển hướng về trang danh sách phiên bản và làm mới.
+Quản lý Kết quả Training (Tích hợp trong trang Chi tiết Phiên bản Model, tab "Kết quả Training"):
+
+Giao diện:
+Tiêu đề: "Kết quả Training cho Phiên bản {version_name}".
+Nút "Thêm Kết quả cho Testset" (chỉ hiển thị nếu có quyền).
+Bảng hiển thị các kết quả đã nhập:
+Cột: "Tên Testset", "Base BLEU", "Base COMET", "GRPO+ORPO BLEU", "GRPO+ORPO COMET", "Ghi chú Training", "Ngày cập nhật", "Hành động".
+Hành động: Nút "Sửa", Nút "Xóa" cho mỗi dòng kết quả (nếu có quyền).
+Nếu chưa có kết quả nào, hiển thị thông báo "Chưa có kết quả training nào cho phiên bản này."
+Chức năng:
+Thêm/Sửa Kết quả Training (Modal/Dialog):
+Form với các trường:
+testset_id: Dropdown select, required. Lấy danh sách từ GET /api/testsets?lang_pair_id={current_lang_pair_id} (các testset phù hợp với cặp ngôn ngữ của model version này). Hiển thị testset_name.
+base_model_bleu: Input type="number", step="0.01", min="0", max="100", optional.
+base_model_comet: Input type="number", step="0.001", min="-1", max="1", optional.
+finetuned_model_bleu: Input type="number", step="0.01", min="0", max="100", optional.
+finetuned_model_comet: Input type="number", step="0.001", min="-1", max="1", optional.
+training_details_notes: Textarea, optional. (Có thể là link tới logs, config, mô tả ngắn gọn về môi trường, data training...).
+Nút "Lưu" và "Hủy".
+Khi "Lưu":
+Nếu thêm mới: Gọi POST /api/model-versions/{version_id}/training-results.
+Nếu sửa: Gọi PUT /api/training-results/{result_id}.
+Validate testset_id duy nhất cho version_id này.
+Sau khi thành công, đóng modal và làm mới bảng kết quả training.
+Xóa Kết quả Training:
+Khi click nút "Xóa": Modal xác nhận "Bạn có chắc muốn xóa kết quả training trên testset '{testset_name}' cho phiên bản này?".
+Nếu xác nhận: Gọi DELETE /api/training-results/{result_id}. Sau khi thành công, làm mới bảng.
+Quản lý Tập Testset (/testsets):
+
+Giao diện danh sách:
+Tiêu đề: "Danh sách Tập Testset".
+Nút "Thêm mới Testset" (nếu có quyền).
+(Tùy chọn) Bộ lọc: Dropdown "Cặp Ngôn Ngữ" để lọc testset theo lang_pair_id.
+Bảng hiển thị:
+Cột: "STT", "Tên Testset (testset_name)", "Mô tả (description)", "Cặp Ngôn Ngữ Liên Quan (hiển thị source_code -> target_code)", "Đường dẫn file nguồn", "Đường dẫn file đích", "Ngày tạo", "Hành động".
+Hành động: Nút "Sửa", Nút "Xóa" (nếu có quyền).
+Chức năng:
+Thêm mới Testset (Modal/Dialog hoặc trang /testsets/new):
+Form với các trường:
+testset_name: Input type="text", required, unique.
+description: Textarea, optional.
+lang_pair_id: Dropdown select, required. Lấy danh sách từ GET /api/language-pairs.
+source_file_path: Input type="text", optional. (Có thể là link Google Drive, S3, path trên server).
+target_file_path: Input type="text", optional.
+(Tùy chọn nâng cao) Upload file: Nếu hệ thống cần lưu trữ file testset. Cần backend xử lý upload file.
+Nút "Lưu" và "Hủy".
+Khi "Lưu": Gọi POST /api/testsets. Sau khi thành công, đóng modal/chuyển hướng và làm mới danh sách.
+Chỉnh sửa thông tin Testset (Modal/Dialog hoặc trang /testsets/edit/{id}):
+Form tương tự "Thêm mới", dữ liệu điền sẵn từ GET /api/testsets/{id}.
+Khi "Lưu": Gọi PUT /api/testsets/{id}.
+Xóa Testset:
+Khi click nút "Xóa": Modal xác nhận "Bạn có chắc muốn xóa testset '{testset_name}'? Nếu testset này đang được sử dụng trong bất kỳ kết quả training nào, hành động này có thể bị từ chối hoặc yêu cầu cập nhật các kết quả đó trước."
+Nếu xác nhận: Gọi DELETE /api/testsets/{id}. Xử lý logic ở backend nếu testset đang được tham chiếu.
+Trực quan hóa Dữ liệu (/visualizations):
+
+Layout: Chia thành các khu vực cho từng loại biểu đồ.
+Bộ lọc chung (áp dụng cho tất cả hoặc từng biểu đồ):
+Dropdown "Chọn Cặp Ngôn Ngữ": required. Lấy danh sách từ GET /api/language-pairs.
+**(Tùy chọn) Dropdown "Chọn Testset": optional. Lấy danh sách từ GET /api/testsets?lang_pair_id={selected_lang_pair_id}. Nếu không chọn, biểu đồ có thể hiển thị dữ liệu trung bình hoặc của testset mặc định.
+**(Tùy chọn) Bộ lọc khoảng thời gian (DateRangePicker): optional. Áp dụng cho biểu đồ tiến độ.
+Các loại biểu đồ:
+Biểu đồ 1: So sánh Base Model vs GRPO+ORPO Model trong một phiên bản.
+Yêu cầu thêm: Dropdown "Chọn Phiên bản Model": required. Lấy danh sách từ GET /api/model-versions?lang_pair_id={selected_lang_pair_id}.
+Khi chọn Cặp Ngôn Ngữ và Phiên bản (và Testset nếu có): Gọi GET /api/visualizations/comparison?version_id={selected_version_id}&testset_id={selected_testset_id}.
+Hiển thị: Biểu đồ cột nhóm.
+Tiêu đề: "So sánh hiệu suất: {version_name} trên {testset_name}".
+Trục X: Categories "BLEU", "COMET".
+Trục Y: Giá trị điểm số.
+Series: "Base Model" (một màu), "GRPO+ORPO Model" (màu khác).
+Tooltip hiển thị giá trị chính xác khi hover.
+Biểu đồ 2: Theo dõi sự tiến bộ của GRPO+ORPO Model qua các phiên bản.
+Yêu cầu thêm: Radio button/Dropdown "Chọn Metric": "BLEU" hoặc "COMET".
+Khi chọn Cặp Ngôn Ngữ, Metric (và Testset, Khoảng thời gian nếu có): Gọi GET /api/visualizations/progress?lang_pair_id={id}&metric={bleu|comet}&testset_id={id}&start_date={date}&end_date={date}.
+Hiển thị: Biểu đồ đường.
+Tiêu đề: "Tiến độ điểm {Metric} (GRPO+ORPO) cho {cặp ngôn ngữ} trên {testset_name}".
+Trục X: Tên phiên bản (version_name) hoặc Ngày Release (release_date), sắp xếp theo thời gian.
+Trục Y: Giá trị điểm của metric đã chọn.
+Một đường biểu diễn sự thay đổi điểm số. Các điểm dữ liệu trên đường có thể hiển thị version_name.
+Tooltip hiển thị giá trị và tên phiên bản khi hover.
+(Tùy chọn) Bảng tổng hợp có khả năng sắp xếp, lọc:
+Hiển thị dữ liệu kết quả training của tất cả các phiên bản thuộc cặp ngôn ngữ đã chọn.
+Cột: "Phiên bản", "Ngày Release", "Testset", "Base BLEU", "Base COMET", "GRPO+ORPO BLEU", "GRPO+ORPO COMET".
+Cho phép sắp xếp theo từng cột.
+Cho phép lọc nâng cao (ví dụ: chỉ hiển thị các phiên bản có BLEU > X).
+Quản lý Release Notes (Tích hợp trong trang Chi tiết Phiên bản Model, tab "Release Notes"):
+
+Giao diện:
+Nếu chưa có: Hiển thị thông báo "Chưa có release notes cho phiên bản này." và nút "Tạo Release Notes" (nếu có quyền).
+Nếu đã có:
+Hiển thị title của release note.
+Hiển thị content đã được render (HTML từ Rich Text Editor hoặc Markdown sang HTML).
+Thông tin meta: "Tác giả: {author_username}", "Ngày tạo: {created_at}", "Cập nhật lần cuối: {updated_at}".
+Nút "Sửa Release Notes" (nếu có quyền).
+Chức năng:
+Tạo/Sửa Release Notes (Modal/Dialog hoặc giao diện inline):
+Input title: type="text", optional.
+Trình soạn thảo (Rich Text hoặc Markdown) cho content.
+Nút "Lưu" và "Hủy".
+Khi "Lưu":
+Nếu tạo mới: Gọi POST /api/model-versions/{version_id}/release-notes với title và content. Backend tự gán author_id dựa trên user đang đăng nhập.
+Nếu sửa: Gọi PUT /api/model-versions/{version_id}/release-notes (hoặc PUT /api/release-notes/{note_id}).
+Sau khi thành công, cập nhật nội dung hiển thị trên tab.
+(Tùy chọn) Quản lý Người dùng & Phân quyền (/users - chỉ cho admin):
+
+Giao diện danh sách:
+Tiêu đề: "Quản lý Người dùng".
+Nút "Thêm người dùng mới".
+Bảng hiển thị:
+Cột: "STT", "Username", "Email", "Vai trò (role)", "Ngày tạo", "Hành động".
+Hành động: Nút "Sửa vai trò", Nút "Đặt lại mật khẩu" (gửi email hoặc tạo mật khẩu tạm), Nút "Xóa người dùng".
+Chức năng:
+Thêm người dùng mới (Modal/Dialog):
+Form: username, email, password (tự sinh hoặc admin nhập), role (dropdown: 'member', 'release_manager', 'admin').
+Khi "Lưu": Gọi POST /api/users.
+Sửa vai trò (Modal/Dialog):
+Hiển thị username, email (read-only). Dropdown role cho phép thay đổi.
+Khi "Lưu": Gọi PUT /api/users/{id} với role mới.
+Xóa người dùng:
+Modal xác nhận.
+Khi "Xác nhận": Gọi DELETE /api/users/{id}. Cân nhắc không cho xóa user admin cuối cùng.
+B. Backend (API & Logic nghiệp vụ)
+
+Ngôn ngữ/Framework đề xuất: Python với FastAPI (hiệu năng cao, dễ học, tự động sinh OpenAPI docs) hoặc Flask/Django.
+
+ORM: SQLAlchemy (cho Flask/Django/FastAPI).
+
+Xác thực: JWT (JSON Web Tokens) sử dụng thư viện như python-jose hoặc PyJWT.
+
+Password Hashing: passlib với bcrypt.
+
+Cấu trúc thư mục dự án (ví dụ cho FastAPI):
+
+/app
+    /main.py            # FastAPI app instance
+    /api
+        /v1
+            /endpoints/
+                auth.py
+                language_pairs.py
+                model_versions.py
+                training_results.py
+                testsets.py
+                visualizations.py
+                release_notes.py
+                users.py        # Optional
+            /api.py             # Router for v1
+    /core
+        config.py           # Settings
+        security.py         # Password hashing, JWT creation/validation
+    /crud                 # Functions interacting with the database
+        crud_user.py
+        crud_language_pair.py
+        ...
+    /db
+        database.py         # SQLite connection, session
+        models.py           # SQLAlchemy models (định nghĩa bảng)
+        session.py          # (Có thể gộp vào database.py)
+    /schemas              # Pydantic models for request/response validation
+        user.py
+        language_pair.py
+        token.py
+        ...
+Endpoints chi tiết và logic:
+
+API Authentication (/api/auth):
+
+POST /login:
+Logic: Nhận username, password. Truy vấn Users theo username. So sánh password_hash bằng passlib. Nếu khớp, tạo JWT (chứa user_id, role, exp).
+POST /register (nếu có):
+Logic: Nhận username, email, password. Kiểm tra username, email đã tồn tại chưa. Hash password. Tạo user mới.
+POST /logout (tùy chọn):
+Logic: Nếu dùng cơ chế blacklist token (ví dụ lưu vào Redis hoặc bảng DB riêng với thời gian hết hạn), thêm token hiện tại vào blacklist.
+Middleware/Dependency cho xác thực và phân quyền:
+Một hàm dependency (trong FastAPI) sẽ kiểm tra Authorization header, giải mã JWT.
+Nếu token hợp lệ, trả về thông tin user (ví dụ: current_user: schemas.User = Depends(get_current_active_user)).
+Các endpoint yêu cầu quyền cụ thể sẽ kiểm tra current_user.role.
+API Quản lý Cặp Ngôn Ngữ (/api/language-pairs):
+
+GET /: Hỗ trợ query param search để lọc theo source_language_code, target_language_code, description (sử dụng ILIKE hoặc LIKE trong SQL). Hỗ trợ phân trang (skip, limit).
+POST /: Validate source_language_code, target_language_code không được rỗng và ràng buộc UNIQUE (source_language_code, target_language_code) sẽ xử lý trùng lặp ở DB.
+PUT /{id}: Chỉ cho phép cập nhật description.
+DELETE /{id}: Kiểm tra ON DELETE CASCADE trên ModelVersions.lang_pair_id. Nếu không cascade, cần kiểm tra thủ công xem có ModelVersions nào tham chiếu đến không trước khi xóa.
+API Quản lý Phiên bản Model (/api/model-versions):
+
+GET /?lang_pair_id={id}: Bắt buộc lang_pair_id. Hỗ trợ sắp xếp theo release_date (mặc định giảm dần) hoặc version_name. Phân trang.
+POST /: Validate lang_pair_id tồn tại. Ràng buộc UNIQUE (lang_pair_id, version_name) ở DB.
+GET /{id}: Ngoài thông tin cơ bản, có thể tùy chọn trả về một phần kết quả training (ví dụ: điểm trung bình hoặc kết quả trên testset chính) và tóm tắt release notes.
+PUT /{id}: Cho phép cập nhật version_name, release_date, description. Cẩn thận nếu version_name thay đổi và nó là một phần của URL hoặc định danh.
+API Quản lý Kết quả Training:
+
+GET /api/model-versions/{version_id}/training-results: Trả về danh sách, join với bảng Testsets để lấy testset_name. Sắp xếp theo testset_name hoặc ngày cập nhật.
+POST /api/model-versions/{version_id}/training-results: Validate version_id và testset_id tồn tại. Ràng buộc UNIQUE (version_id, testset_id) ở DB.
+PUT /api/training-results/{result_id}: Cho phép cập nhật tất cả các điểm số và training_details_notes.
+DELETE /api/training-results/{result_id}.
+API Quản lý Tập Testset (/api/testsets):
+
+GET /: Hỗ trợ lang_pair_id để lọc. Sắp xếp theo testset_name. Phân trang.
+POST /: Validate lang_pair_id tồn tại. Ràng buộc UNIQUE (testset_name) ở DB.
+DELETE /{id}: Nếu TrainingResults.testset_id có ON DELETE RESTRICT, DB sẽ không cho xóa nếu đang được dùng. Backend cần bắt lỗi này và trả về 400 Bad Request với thông báo phù hợp.
+API Trực quan hóa Dữ liệu (/api/visualizations):
+
+GET /comparison?version_id={id}&testset_id={id}:
+Logic: Lấy TrainingResult theo version_id và testset_id. Lấy version_name từ ModelVersions và testset_name từ Testsets. Định dạng dữ liệu như mô tả ở Frontend.
+GET /progress?lang_pair_id={id}&metric={bleu|comet}&testset_id={id_opt}&start_date={date_opt}&end_date={date_opt}:
+Logic:
+Lấy tất cả ModelVersions cho lang_pair_id (có thể filter theo start_date, end_date trên release_date). Sắp xếp theo release_date.
+Với mỗi ModelVersion, lấy TrainingResult tương ứng (nếu testset_id được cung cấp thì lọc theo nó, nếu không có thể lấy kết quả trên một testset mặc định hoặc tính trung bình nếu có nhiều testset cho một version - logic này cần làm rõ).
+Trích xuất điểm metric (BLEU hoặc COMET của finetuned model).
+Định dạng dữ liệu trả về (danh sách các dictionary { "version_name": ..., "release_date": ..., "score": ... }).
+API Quản lý Release Notes:
+
+GET /api/model-versions/{version_id}/release-notes: Join với bảng Users để lấy author_username. Nếu không tìm thấy note, trả về 404 hoặc 200 với content rỗng.
+POST /api/model-versions/{version_id}/release-notes: author_id lấy từ current_user.user_id. Ràng buộc UNIQUE (version_id) ở DB.
+PUT /api/model-versions/{version_id}/release-notes: Tìm ReleaseNote theo version_id. Cập nhật title, content. author_id có thể không đổi hoặc ghi nhận người sửa cuối cùng (thêm trường updated_by_id).
+(Tùy chọn) API Quản lý Người dùng (/api/users):
+
+POST /: Hash mật khẩu trước khi lưu.
+PUT /{id}: Nếu cập nhật mật khẩu, cần quy trình riêng (ví dụ: trường new_password). Không trả về password_hash.
+C. Database (SQLite)
+
+File database: nmt_release_management.db (hoặc tên tương tự).
+
+Sử dụng SQLAlchemy:
+
+Định nghĩa các class model tương ứng với các bảng (ví dụ: User(Base), LanguagePair(Base)...).
+Sử dụng Alembic (tùy chọn nhưng khuyến nghị) để quản lý migrations (thay đổi schema).
+Cấu trúc bảng chi tiết (với kiểu dữ liệu SQLAlchemy và các điều chỉnh cho SQLite):
+
+Python
+
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, UniqueConstraint, Index, Date, Float, event
+from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.sql import func # For CURRENT_TIMESTAMP
+
+Base = declarative_base()
+
+# Sử dụng func.now() cho giá trị mặc định của timestamp
+# SQLite không có kiểu BOOLEAN thực sự, thường dùng INTEGER 0 hoặc 1
+
+class User(Base):
+    __tablename__ = "users"
+    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    role = Column(String, nullable=False, default='member') # 'member', 'release_manager', 'admin'
+    created_at = Column(Text, server_default=func.now()) # Hoặc DateTime với default=datetime.utcnow cho các DB khác
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    authored_release_notes = relationship("ReleaseNote", back_populates="author")
+
+class LanguagePair(Base):
+    __tablename__ = "language_pairs"
+    lang_pair_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    source_language_code = Column(String(10), nullable=False)
+    target_language_code = Column(String(10), nullable=False)
+    description = Column(Text)
+    created_at = Column(Text, server_default=func.now())
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (UniqueConstraint('source_language_code', 'target_language_code', name='uq_lang_pair_source_target'),)
+
+    # Relationships
+    model_versions = relationship("ModelVersion", back_populates="language_pair", cascade="all, delete-orphan")
+    testsets = relationship("Testset", back_populates="language_pair") # Không cascade delete từ đây
+
+class ModelVersion(Base):
+    __tablename__ = "model_versions"
+    version_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    lang_pair_id = Column(Integer, ForeignKey("language_pairs.lang_pair_id", ondelete="CASCADE"), nullable=False) # CASCADE delete
+    version_name = Column(String, nullable=False)
+    release_date = Column(Date) # Sử dụng kiểu Date nếu DB hỗ trợ, hoặc Text 'YYYY-MM-DD'
+    description = Column(Text)
+    created_at = Column(Text, server_default=func.now())
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (UniqueConstraint('lang_pair_id', 'version_name', name='uq_model_version_lang_pair_name'),
+                      Index('idx_model_version_release_date', 'release_date'))
+
+    # Relationships
+    language_pair = relationship("LanguagePair", back_populates="model_versions")
+    training_results = relationship("TrainingResult", back_populates="model_version", cascade="all, delete-orphan")
+    release_note = relationship("ReleaseNote", back_populates="model_version", uselist=False, cascade="all, delete-orphan") # One-to-one
+
+class Testset(Base):
+    __tablename__ = "testsets"
+    testset_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # Nếu testset có thể không thuộc LP nào (chung) thì nullable=True, nhưng phác thảo yêu cầu có.
+    lang_pair_id = Column(Integer, ForeignKey("language_pairs.lang_pair_id", ondelete="RESTRICT"), nullable=False)
+    testset_name = Column(String, nullable=False, unique=True)
+    description = Column(Text)
+    source_file_path = Column(String)
+    target_file_path = Column(String)
+    created_at = Column(Text, server_default=func.now())
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    language_pair = relationship("LanguagePair", back_populates="testsets")
+    training_results = relationship("TrainingResult", back_populates="testset") # Không cascade từ đây
+
+class TrainingResult(Base):
+    __tablename__ = "training_results"
+    result_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    version_id = Column(Integer, ForeignKey("model_versions.version_id", ondelete="CASCADE"), nullable=False)
+    testset_id = Column(Integer, ForeignKey("testsets.testset_id", ondelete="RESTRICT"), nullable=False) # RESTRICT delete of testset
+    base_model_bleu = Column(Float) # SQLite dùng REAL cho Float
+    base_model_comet = Column(Float)
+    finetuned_model_bleu = Column(Float)
+    finetuned_model_comet = Column(Float)
+    training_details_notes = Column(Text)
+    created_at = Column(Text, server_default=func.now())
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (UniqueConstraint('version_id', 'testset_id', name='uq_training_result_version_testset'),)
+
+    # Relationships
+    model_version = relationship("ModelVersion", back_populates="training_results")
+    testset = relationship("Testset", back_populates="training_results")
+
+class ReleaseNote(Base):
+    __tablename__ = "release_notes"
+    note_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # UNIQUE constraint ở đây đảm bảo one-to-one với ModelVersion
+    version_id = Column(Integer, ForeignKey("model_versions.version_id", ondelete="CASCADE"), unique=True, nullable=False)
+    title = Column(String)
+    content = Column(Text) # HTML hoặc Markdown
+    author_id = Column(Integer, ForeignKey("users.user_id", ondelete="SET NULL")) # SET NULL nếu user bị xóa
+    created_at = Column(Text, server_default=func.now())
+    updated_at = Column(Text, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    model_version = relationship("ModelVersion", back_populates="release_note")
+    author = relationship("User", back_populates="authored_release_notes")
+
+# For SQLite, onupdate=func.now() in Column definition might not work directly for auto-update.
+# Triggers are a more reliable way for SQLite to update `updated_at` timestamps.
+# However, SQLAlchemy's ORM events can handle this at the application level.
+# Example using SQLAlchemy event for `updated_at` (put this after model definitions):
+# from sqlalchemy import event
+# from datetime import datetime
+#
+# def generic_update_timestamp(mapper, connection, target):
+#     target.updated_at = datetime.utcnow() # Hoặc datetime.now() cho múi giờ local
+#
+# for model_class in [User, LanguagePair, ModelVersion, Testset, TrainingResult, ReleaseNote]:
+#     event.listen(model_class, 'before_update', generic_update_timestamp)
+
+Lưu ý quan trọng cho updated_at trong SQLite với SQLAlchemy:
+
+onupdate=func.now() trong Column không tự động hoạt động cho SQLite như với MySQL hay PostgreSQL.
+Cách 1 (Dùng Trigger ở DB - như bạn đề xuất): Đây là cách tốt nhất ở tầng DB.
+SQL
+
+CREATE TRIGGER update_users_updated_at
+AFTER UPDATE ON users
+FOR EACH ROW
+BEGIN
+    UPDATE users SET updated_at = STRFTIME('%Y-%m-%d %H:%M:%f', 'now') WHERE user_id = OLD.user_id;
+END;
+(Cần tạo trigger tương tự cho các bảng khác. STRFTIME('%Y-%m-%d %H:%M:%f', 'now') cho định dạng ISO8601).
+Cách 2 (Dùng SQLAlchemy events - như ví dụ Python ở trên): Cập nhật trường updated_at trong code Python trước khi commit transaction. Điều này đảm bảo updated_at được cập nhật nhưng nó xảy ra ở tầng ứng dụng.
+Cách 3 (Đơn giản nhất cho SQLite, nếu không quá khắt khe): Cập nhật thủ công trường updated_at trong logic CRUD của bạn mỗi khi có hành động update.
+Indexes: Đã thêm một vài index=True và Index() gợi ý trong model SQLAlchemy. Cần xem xét kỹ hơn dựa trên các truy vấn thường xuyên. Ví dụ:
+
+users.username, users.email (đã có unique=True thường tạo index).
+model_versions.lang_pair_id, model_versions.release_date.
+training_results.version_id, training_results.testset_id.
+testsets.lang_pair_id.
+IV. Luồng Dữ Liệu và Logic Nghiệp Vụ Quan Trọng (Mở rộng)
+
+Xóa Cặp Ngôn Ngữ (LanguagePair):
+
+Khi một LanguagePair bị xóa, do cascade="all, delete-orphan" trên LanguagePair.model_versions và ModelVersion.lang_pair_id có ON DELETE CASCADE:
+Tất cả ModelVersion thuộc LanguagePair đó sẽ bị xóa.
+Do cascade="all, delete-orphan" trên ModelVersion.training_results và ModelVersion.release_note, tất cả TrainingResult và ReleaseNote liên quan đến các ModelVersion đó cũng sẽ bị xóa.
+Testset.lang_pair_id có ON DELETE RESTRICT. Nếu một LanguagePair bị xóa mà vẫn còn Testset nào đó trỏ tới nó, hành động xóa LanguagePair sẽ thất bại ở tầng DB. Cần xử lý:
+Hoặc là yêu cầu người dùng xóa/gán lại Testset cho LanguagePair khác trước.
+Hoặc là thay đổi ondelete thành SET NULL (nếu Testset.lang_pair_id có thể NULL) hoặc CASCADE (nếu muốn xóa cả testset). RESTRICT là an toàn nhất.
+Xóa Testset (Testset):
+
+TrainingResult.testset_id có ON DELETE RESTRICT. Nếu một Testset bị xóa mà vẫn còn TrainingResult nào đó trỏ tới nó, hành động xóa Testset sẽ thất bại.
+Frontend cần thông báo cho người dùng về điều này.
+Logic phân quyền:
+
+Member:
+Xem: Tất cả (Language Pairs, Model Versions, Testsets, Training Results, Release Notes).
+Tạo/Sửa/Xóa: Không. (Có thể mở rộng cho phép nhập Training Results nếu có cơ chế phân công).
+Release Manager:
+Quyền của Member.
+Tạo/Sửa/Xóa: Language Pairs, Model Versions, Testsets, Training Results, Release Notes.
+Không quản lý Users.
+Admin:
+Quyền của Release Manager.
+Tạo/Sửa/Xóa: Users (bao gồm cả đặt lại mật khẩu, thay đổi vai trò).
+V. Các Điểm Cần Lưu Ý Thêm (Mở rộng)
+
+Validation Dữ liệu:
+Frontend: Validation cơ bản (required, format) để cải thiện UX.
+Backend: Validation toàn diện (Pydantic schemas trong FastAPI là một cách tốt) trước khi tương tác với DB. Kiểm tra logic nghiệp vụ (ví dụ: release_date không thể ở tương lai quá xa, điểm BLEU/COMET trong khoảng hợp lệ).
+Logging: Thiết lập logging ở backend để ghi lại các sự kiện quan trọng, lỗi, và các yêu cầu API (có thể ở mức INFO hoặc DEBUG).
+Configuration: Sử dụng biến môi trường (ví dụ: qua file .env) cho các cài đặt như secret key của JWT, thông tin database (nếu không phải SQLite file cố định), v.v.
+API Versioning: Bắt đầu với /api/v1/ là một thói quen tốt cho khả năng mở rộng trong tương lai.
+Testing:
+Unit tests: Cho các hàm logic, CRUD operations.
+Integration tests: Cho các API endpoints.
+Tài liệu API: Sử dụng OpenAPI (Swagger) để tự động sinh tài liệu API (FastAPI làm điều này rất tốt).
+File Uploads (Nếu quản lý file testset thực sự):
+Cân nhắc lưu trữ file trên cloud (S3, Google Cloud Storage) thay vì trực tiếp trên server của ứng dụng, đặc biệt nếu có khả năng scale.
+Backend cần endpoint riêng để xử lý upload (multipart/form-data). Lưu trữ đường dẫn file vào DB.
