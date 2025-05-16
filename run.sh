@@ -31,7 +31,7 @@ function start_backend() {
   
   # Start backend server
   echo "Starting FastAPI server..."
-  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 6868 &
   BACKEND_PID=$!
   cd ..
   
@@ -75,9 +75,9 @@ start_frontend
 
 # Show success message
 echo "Services started successfully!"
-echo "- Backend: http://localhost:8000"
+echo "- Backend: http://localhost:6868"
 echo "- Frontend: http://localhost:3000"
-echo "- API Docs: http://localhost:8000/docs"
+echo "- API Docs: http://localhost:6868/docs"
 print_line
 echo "Press CTRL+C to stop all services"
 
