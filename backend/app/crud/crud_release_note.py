@@ -11,6 +11,10 @@ def get_release_note(db: Session, version_id: int) -> Optional[ReleaseNote]:
     return db.query(ReleaseNote).filter(ReleaseNote.version_id == version_id).first()
 
 
+# Add alias for backward compatibility
+get_by_version = get_release_note
+
+
 def create_release_note(
     db: Session, release_note_in: ReleaseNoteCreate
 ) -> ReleaseNote:

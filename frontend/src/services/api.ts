@@ -21,9 +21,10 @@ import {
   ComparisonDataPoint,
   ProgressDataPoint
 } from '../types';
+import { getToken } from './auth';
 
 // Function to get API base URL
-const getApiBaseUrl = () => {
+export const getApiBaseUrl = () => {
   // Use environment variable if available
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
@@ -52,13 +53,51 @@ const api = axios.create({
   },
 });
 
+// Add detailed logging for development
+if (process.env.NODE_ENV === 'development') {
+  api.interceptors.request.use(request => {
+    console.log('🚀 API Request:', request.method?.toUpperCase(), request.url);
+    console.log('Request data:', request.data);
+    console.log('Request headers:', request.headers);
+    return request;
+  });
+  
+  api.interceptors.response.use(
+    response => {
+      console.log('✅ API Response:', response.status, response.config.url);
+      return response;
+    },
+    error => {
+      console.log('❌ API Error:', error.response?.status, error.config?.url);
+      console.log('Error details:', error.response?.data);
+      return Promise.reject(error);
+    }
+  );
+}
+
 // Add request interceptor to add auth token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Check if we're sending FormData - if so, remove the default Content-Type
+    // so browser can set the correct multipart boundary
+    if (config.data instanceof FormData) {
+      console.log('FormData detected - removing Content-Type to allow browser to set multipart boundary');
+      delete config.headers['Content-Type'];
+      
+      // Log all FormData fields for debugging
+      const formData = config.data as FormData;
+      console.log('FormData contents:');
+      for (const pair of Array.from(formData.entries())) {
+        const [key, value] = pair;
+        console.log(`- ${key}: ${value instanceof File ? `File: ${value.name} (${value.type})` : value}`);
+      }
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -179,29 +218,29 @@ export const deleteLanguagePair = async (id: number): Promise<boolean> => {
 
 // Model Version APIs
 export const getModelVersions = async (langPairId: number): Promise<ModelVersion[]> => {
-  const response = await api.get<ModelVersion[]>('/model-versions', {
+  const response = await api.get<ModelVersion[]>('/model-versions/', {
     params: { lang_pair_id: langPairId }
   });
   return response.data;
 };
 
 export const getModelVersion = async (id: number): Promise<ModelVersion> => {
-  const response = await api.get<ModelVersion>(`/model-versions/${id}`);
+  const response = await api.get<ModelVersion>(`/model-versions/${id}/`);
   return response.data;
 };
 
 export const createModelVersion = async (data: ModelVersionCreate): Promise<ModelVersion> => {
-  const response = await api.post<ModelVersion>('/model-versions', data);
+  const response = await api.post<ModelVersion>('/model-versions/', data);
   return response.data;
 };
 
 export const updateModelVersion = async (id: number, data: ModelVersionUpdate): Promise<ModelVersion> => {
-  const response = await api.put<ModelVersion>(`/model-versions/${id}`, data);
+  const response = await api.put<ModelVersion>(`/model-versions/${id}/`, data);
   return response.data;
 };
 
 export const deleteModelVersion = async (id: number): Promise<boolean> => {
-  const response = await api.delete<boolean>(`/model-versions/${id}`);
+  const response = await api.delete<boolean>(`/model-versions/${id}/`);
   return response.data;
 };
 
@@ -209,28 +248,96 @@ export const deleteModelVersion = async (id: number): Promise<boolean> => {
 export const getTestsets = async (langPairId?: number): Promise<Testset[]> => {
   const params: Record<string, any> = {};
   if (langPairId) params.lang_pair_id = langPairId;
-
-  const response = await api.get<Testset[]>('/testsets', { params });
+  const response = await api.get<Testset[]>('/testsets/', { params });
   return response.data;
 };
 
 export const getTestset = async (id: number): Promise<Testset> => {
-  const response = await api.get<Testset>(`/testsets/${id}`);
+  const response = await api.get<Testset>(`/testsets/${id}/`);
   return response.data;
 };
 
-export const createTestset = async (data: TestsetCreate): Promise<Testset> => {
-  const response = await api.post<Testset>('/testsets', data);
+export const createTestset = async (data: TestsetCreate, sourceFile?: File, targetFile?: File): Promise<Testset> => {
+  // Use FormData for file uploads
+  const formData = new FormData();
+  
+  // Add the form data as JSON string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add individual fields for compatibility
+  formData.append('testset_name', data.testset_name);
+  formData.append('lang_pair_id', String(data.lang_pair_id));
+  
+  if (data.description) {
+    formData.append('description', data.description);
+  }
+  
+  // Add files if provided
+  if (sourceFile) {
+    formData.append('source_file', sourceFile);
+  }
+  
+  if (targetFile) {
+    formData.append('target_file', targetFile);
+  }
+  
+  const response = await api.post<Testset>('/testsets', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  
   return response.data;
 };
 
-export const updateTestset = async (id: number, data: TestsetUpdate): Promise<Testset> => {
-  const response = await api.put<Testset>(`/testsets/${id}`, data);
+export const updateTestset = async (
+  id: number,
+  data: TestsetUpdate,
+  sourceFile?: File,
+  targetFile?: File
+): Promise<Testset> => {
+  // Use FormData for file uploads
+  const formData = new FormData();
+  
+  // Add the form data as JSON string
+  formData.append('data', JSON.stringify(data));
+  
+  // Add individual fields for compatibility
+  if (data.testset_name !== undefined) {
+    formData.append('testset_name', data.testset_name);
+  }
+  
+  if (data.description !== undefined) {
+    formData.append('description', data.description);
+  }
+  
+  // Add files if provided
+  if (sourceFile) {
+    formData.append('source_file', sourceFile);
+  }
+  
+  if (targetFile) {
+    formData.append('target_file', targetFile);
+  }
+  
+  const response = await api.put<Testset>(`/testsets/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  
   return response.data;
 };
 
 export const deleteTestset = async (id: number): Promise<boolean> => {
   const response = await api.delete<boolean>(`/testsets/${id}`);
+  return response.data;
+};
+
+export const downloadTestsetFile = async (testsetId: number, fileType: 'source' | 'target'): Promise<Blob> => {
+  const response = await api.get(`/testsets/${testsetId}/files/${fileType}`, {
+    responseType: 'blob'
+  });
   return response.data;
 };
 
@@ -345,4 +452,14 @@ export const exportModelVersions = async (langPairId: number, format: 'excel' | 
     responseType: 'blob'
   });
   return response.data;
-}; 
+};
+
+// Export object with HTTP methods for compatibility
+const apiMethods = {
+  get: api.get.bind(api),
+  post: api.post.bind(api),
+  put: api.put.bind(api),
+  delete: api.delete.bind(api)
+};
+
+export default apiMethods; 

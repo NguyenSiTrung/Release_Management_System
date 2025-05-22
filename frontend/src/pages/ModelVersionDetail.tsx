@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -28,6 +28,10 @@ import {
   MenuItem,
   Link,
   Alert,
+  Container,
+  Chip,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -56,6 +60,8 @@ import PageHeader from '../components/common/PageHeader';
 import LoadingIndicator from '../components/common/LoadingIndicator';
 import ErrorDisplay from '../components/common/ErrorDisplay';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import ModelVersionForm from '../components/ModelVersion/ModelVersionForm';
+import ModelVersionDetailsTabs from '../components/ModelVersion/ModelVersionDetailsTabs';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -128,7 +134,9 @@ const ModelVersionDetailPage: React.FC = () => {
   const [resultToDelete, setResultToDelete] = useState<TrainingResult | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchModelVersionData = async () => {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  const fetchModelVersionData = useCallback(async () => {
     if (!versionId) return;
     
     try {
@@ -166,11 +174,11 @@ const ModelVersionDetailPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [versionId]);
 
   useEffect(() => {
     fetchModelVersionData();
-  }, [versionId]);
+  }, [fetchModelVersionData]);
 
   // Clear location state after reading it
   useEffect(() => {
@@ -331,8 +339,45 @@ const ModelVersionDetailPage: React.FC = () => {
     return testset ? testset.testset_name : 'Unknown Testset';
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleEditClick = () => {
+    setEditDialogOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setEditDialogOpen(false);
+  };
+
+  const handleEditSuccess = () => {
+    setEditDialogOpen(false);
+    fetchModelVersionData();
+  };
+
   if (isLoading) {
-    return <LoadingIndicator message="Loading model version data..." />;
+    return (
+      <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Alert severity="error">{error}</Alert>
+        <Button 
+          variant="outlined" 
+          sx={{ mt: 2 }} 
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+        >
+          Back
+        </Button>
+      </Container>
+    );
   }
 
   if (!modelVersion || !languagePair) {
@@ -345,239 +390,63 @@ const ModelVersionDetailPage: React.FC = () => {
   }
 
   return (
-    <Box>
-      <PageHeader
-        title={`Model Version: ${modelVersion.version_name}`}
-        breadcrumbs={[
-          { label: 'Model Versions', path: '/model-versions' },
-          { label: modelVersion.version_name },
-        ]}
-        action={
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate(`/model-versions?langPairId=${modelVersion.lang_pair_id}`)}
-              startIcon={<ArrowBackIcon />}
-            >
-              Back to List
-            </Button>
-            {isReleaseManager && (
-              <Button
-                variant="contained"
-                onClick={() => navigate(`/model-versions?edit=${modelVersion.version_id}&langPairId=${modelVersion.lang_pair_id}`)}
-              >
-                Edit Model Version
-              </Button>
-            )}
-          </Box>
-        }
-      />
-
-      {error && (
-        <ErrorDisplay 
-          message={error} 
-          onRetry={fetchModelVersionData} 
-        />
-      )}
-
-      {successMessage && (
-        <Alert 
-          severity="success" 
-          sx={{ mb: 2 }}
-          onClose={() => setSuccessMessage(null)}
+    <Container sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h4" component="h1">
+          {modelVersion.version_name}
+              </Typography>
+        <IconButton 
+          color="primary" 
+          onClick={handleEditClick} 
+          sx={{ ml: 2 }}
+          aria-label="edit model version"
         >
-          {successMessage}
-        </Alert>
-      )}
-
-      {isNewlyCreated && (
-        <Alert 
-          severity="info" 
-          sx={{ mb: 2 }}
-          onClose={() => {}}
-        >
-          Add training results below with BLEU and COMET scores for the base model and fine-tuned model.
-        </Alert>
-      )}
-
-      <Paper sx={{ mb: 3 }}>
-        <Box p={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Language Pair
-              </Typography>
-              <Typography variant="body1">
-                {languagePair.source_language_code} → {languagePair.target_language_code}
-                {languagePair.description && ` (${languagePair.description})`}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Release Date
-              </Typography>
-              <Typography variant="body1">
-                {modelVersion.release_date
-                  ? new Date(modelVersion.release_date).toLocaleDateString()
-                  : 'Not specified'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Description
-              </Typography>
-              <Typography variant="body1">
-                {modelVersion.description || 'No description provided'}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
-
-      <Paper>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor="primary"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab 
-            icon={<AssessmentIcon />} 
-            label="Training Results" 
-            id="tab-0"
-            aria-controls="tabpanel-0"
-          />
-          <Tab 
-            icon={<DescriptionIcon />} 
-            label="Release Notes" 
-            id="tab-1"
-            aria-controls="tabpanel-1"
-          />
-        </Tabs>
-
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            {isReleaseManager && (
-              <Button
-                variant="contained"
-                onClick={handleOpenCreateTrainingDialog}
-                color={isNewlyCreated ? "success" : "primary"}
-                sx={isNewlyCreated ? { fontWeight: 'bold', animation: 'pulse 2s infinite' } : {}}
-              >
-                Add Training Result
-              </Button>
-            )}
+          <EditIcon />
+        </IconButton>
           </Box>
 
-          {trainingResults.length === 0 ? (
-            <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="body1">
-                No training results added yet. 
-                {isReleaseManager && (
-                  <>
-                    {' '}<Button 
-                      onClick={handleOpenCreateTrainingDialog} 
-                      color={isNewlyCreated ? "success" : "primary"}
-                      variant={isNewlyCreated ? "contained" : "text"}
-                    >
-                      Add your first training result
-                    </Button>
-                  </>
-                )}
-              </Typography>
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Testset</TableCell>
-                    <TableCell align="right">Base BLEU</TableCell>
-                    <TableCell align="right">Base COMET</TableCell>
-                    <TableCell align="right">GRPO+ORPO BLEU</TableCell>
-                    <TableCell align="right">GRPO+ORPO COMET</TableCell>
-                    <TableCell>Training Notes</TableCell>
-                    {isReleaseManager && <TableCell align="right">Actions</TableCell>}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {trainingResults.map((result) => (
-                    <TableRow key={result.result_id}>
-                      <TableCell>{getTestsetName(result.testset_id)}</TableCell>
-                      <TableCell align="right">{result.base_model_bleu?.toFixed(2) || '-'}</TableCell>
-                      <TableCell align="right">{result.base_model_comet?.toFixed(3) || '-'}</TableCell>
-                      <TableCell align="right">{result.finetuned_model_bleu?.toFixed(2) || '-'}</TableCell>
-                      <TableCell align="right">{result.finetuned_model_comet?.toFixed(3) || '-'}</TableCell>
-                      <TableCell>
-                        {result.training_details_notes && result.training_details_notes.length > 50
-                          ? `${result.training_details_notes.substring(0, 50)}...`
-                          : result.training_details_notes || '-'}
-                      </TableCell>
-                      {isReleaseManager && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenEditTrainingDialog(result)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => handleOpenDeleteDialog(result)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            {isReleaseManager && (
-              <Button
-                variant="contained"
-                onClick={handleOpenReleaseNoteDialog}
-              >
-                {releaseNote ? 'Edit Release Note' : 'Create Release Note'}
-              </Button>
-            )}
-          </Box>
-
-          {!releaseNote ? (
-            <Typography variant="body1" sx={{ textAlign: 'center', my: 4 }}>
-              No release notes found for this model version.
+      <Paper sx={{ mb: 4, p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              ID: {modelVersion.version_id}
             </Typography>
-          ) : (
-            <Card variant="outlined">
-              <CardContent>
-                {releaseNote.title && (
-                  <Typography variant="h5" gutterBottom>
-                    {releaseNote.title}
-                  </Typography>
+            {modelVersion.release_date && (
+              <Typography variant="body2" color="text.secondary">
+                Release Date: {new Date(modelVersion.release_date).toLocaleDateString()}
+              </Typography>
+            )}
+          </Box>
+          <Chip 
+            label={`${languagePair.source_language_code} → ${languagePair.target_language_code}`}
+            color="primary"
+            variant="outlined"
+          />
+          </Box>
+
+        {modelVersion.description && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6">Description</Typography>
+            <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-line' }}>
+              {modelVersion.description}
+            </Typography>
+          </>
                 )}
-                <Typography variant="body1" component="div" sx={{ whiteSpace: 'pre-wrap' }}>
-                  {releaseNote.content || 'No content provided.'}
-                </Typography>
-                {releaseNote.author && (
-                  <Typography variant="caption" sx={{ mt: 4, display: 'block' }}>
-                    Author: {releaseNote.author.username}
-                  </Typography>
-                )}
-                <Typography variant="caption" sx={{ display: 'block' }}>
-                  Last updated: {new Date(releaseNote.updated_at).toLocaleString()}
-                </Typography>
-              </CardContent>
-            </Card>
-          )}
-        </TabPanel>
       </Paper>
+
+      <ModelVersionDetailsTabs 
+        modelVersion={modelVersion} 
+        onRefresh={fetchModelVersionData}
+        releaseNote={releaseNote}
+        trainingResults={trainingResults}
+        testsets={testsets}
+        onAddTrainingResult={handleOpenCreateTrainingDialog}
+        onEditReleaseNote={handleOpenReleaseNoteDialog}
+      />
 
       {/* Training Result Dialog */}
       <Dialog 
@@ -644,7 +513,7 @@ const ModelVersionDetailPage: React.FC = () => {
                   name="base_model_comet"
                   label="Base Model COMET"
                   type="number"
-                  inputProps={{ step: 0.001, min: -1, max: 1 }}
+                  inputProps={{ step: 0.0001, min: -1, max: 1 }}
                   value={trainingFormik.values.base_model_comet}
                   onChange={trainingFormik.handleChange}
                   error={
@@ -684,7 +553,7 @@ const ModelVersionDetailPage: React.FC = () => {
                   name="finetuned_model_comet"
                   label="GRPO+ORPO COMET"
                   type="number"
-                  inputProps={{ step: 0.001, min: -1, max: 1 }}
+                  inputProps={{ step: 0.0001, min: -1, max: 1 }}
                   value={trainingFormik.values.finetuned_model_comet}
                   onChange={trainingFormik.handleChange}
                   error={
@@ -818,7 +687,18 @@ const ModelVersionDetailPage: React.FC = () => {
         confirmText="Delete"
         confirmColor="error"
       />
-    </Box>
+
+      {/* Edit Dialog */}
+      {editDialogOpen && (
+        <ModelVersionForm
+          open={editDialogOpen}
+          onClose={handleEditClose}
+          onSuccess={handleEditSuccess}
+          modelVersion={modelVersion}
+          mode="edit"
+        />
+      )}
+    </Container>
   );
 };
 

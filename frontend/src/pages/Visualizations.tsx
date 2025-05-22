@@ -188,8 +188,8 @@ const Visualizations: React.FC = () => {
   // Formatting functions for charts
   const formatScoreValue = (value: number) => {
     return selectedMetric === 'bleu' 
-      ? value.toFixed(2)  // Không thêm dấu % cho BLEU
-      : value.toFixed(3);
+      ? value.toFixed(2)  // BLEU with 2 decimal places
+      : value.toFixed(4);  // COMET with 4 decimal places
   };
 
   // THÊM HÀM MỚI: Định dạng giá trị hiển thị trên trục Y dựa trên loại metric
@@ -200,8 +200,8 @@ const Visualizations: React.FC = () => {
   // THÊM HÀM MỚI: Định dạng giá trị tooltip của biểu đồ
   const formatTooltipValue = (value: number, metric: 'bleu' | 'comet') => {
     return metric === 'bleu' 
-      ? value.toFixed(2)  // Không thêm dấu % cho BLEU
-      : value.toFixed(3);
+      ? value.toFixed(2)  // BLEU with 2 decimal places
+      : value.toFixed(4);  // COMET with 4 decimal places
   };
 
   if (isLoading) {
@@ -330,8 +330,8 @@ const Visualizations: React.FC = () => {
                   <Tooltip 
                     formatter={(value: number) => 
                       selectedMetric === 'bleu' 
-                        ? value.toFixed(2)  // Không thêm dấu % cho BLEU
-                        : value.toFixed(3)
+                        ? value.toFixed(2)  // Display BLEU with 2 decimal places
+                        : value.toFixed(4)  // Display COMET with 4 decimal places
                     } 
                   />
                   <Legend />
@@ -342,14 +342,14 @@ const Visualizations: React.FC = () => {
                     stroke="#3f51b5" 
                     activeDot={{ r: 8 }}
                   >
-                    {/* Hiển thị giá trị trên mỗi điểm dữ liệu */}
+                    {/* Display values on each data point */}
                     <LabelList 
                       dataKey="score" 
                       position="top" 
                       formatter={(value: number) => 
                         selectedMetric === 'bleu' 
-                          ? value.toFixed(1)  // Hiển thị BLEU với 1 số thập phân
-                          : value.toFixed(2)  // Hiển thị COMET với 2 số thập phân
+                          ? value.toFixed(2)  // Display BLEU with 2 decimal places
+                          : value.toFixed(4)  // Display COMET with 4 decimal places
                       } 
                     />
                   </Line>
@@ -408,14 +408,14 @@ const Visualizations: React.FC = () => {
                         <LabelList 
                           dataKey="base_model" 
                           position="top"
-                          formatter={(value: number) => value.toFixed(1)}
+                          formatter={(value: number) => value.toFixed(2)} // Display BLEU with 2 decimal places
                         />
                       </Bar>
                       <Bar dataKey="finetuned_model" name="Finetuned Model" fill="#3f51b5">
                         <LabelList 
                           dataKey="finetuned_model" 
                           position="top"
-                          formatter={(value: number) => value.toFixed(1)}
+                          formatter={(value: number) => value.toFixed(2)} // Display BLEU with 2 decimal places
                         />
                       </Bar>
                     </BarChart>
@@ -438,20 +438,20 @@ const Visualizations: React.FC = () => {
                         domain={[0, 1]}
                         tickFormatter={value => value.toString()}
                       />
-                      <Tooltip formatter={(value: number) => value.toFixed(3)} />
+                      <Tooltip formatter={(value: number) => value.toFixed(4)} />
                       <Legend />
                       <Bar dataKey="base_model" name="Base Model" fill="#e91e63">
                         <LabelList 
                           dataKey="base_model" 
                           position="top"
-                          formatter={(value: number) => value.toFixed(2)}
+                          formatter={(value: number) => value.toFixed(4)} // Display COMET with 4 decimal places
                         />
                       </Bar>
                       <Bar dataKey="finetuned_model" name="Finetuned Model" fill="#3f51b5">
                         <LabelList 
                           dataKey="finetuned_model" 
                           position="top"
-                          formatter={(value: number) => value.toFixed(2)}
+                          formatter={(value: number) => value.toFixed(4)} // Display COMET with 4 decimal places
                         />
                       </Bar>
                     </BarChart>

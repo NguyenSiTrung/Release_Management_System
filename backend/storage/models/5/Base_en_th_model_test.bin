@@ -1,0 +1,185 @@
+NMT has been successful and is a growing field of research.
+Current models use tokens (words, subwords, characters) as basic units.
+These tokens might not always capture the full meaning (semantics) because:
+Words can be composed of subwords and their meaning emerges from the combination.
+Phrases can have a meaning different from the sum of their individual words.
+This hinders models from fully understanding the sentence.
+Recent research has explored using phrases to improve NMT:
+Some methods focus on aligning phrases between source and target languages.
+Others focus on using phrase representations from the source language.
+However, these approaches often rely on complex tools or struggle to capture the full meaning of phrases.
+
+
+The paper proposes a method for NMT that includes:
+Extracting semantic units
+Learning representations of those units
+Incorporating these representations into the translation process
+A semantic unit is defined as a sequence of tokens with a unified meaning.
+It can be composed of subwords, words, or both.
+Word Pair Encoding (WPE) is introduced to extract semantic units based on word co-occurrence.
+Attentive Semantic Fusion (ASF) is proposed to learn representations of the semantic units.
+It leverages the attention mechanism to obtain a fixed-length representation.
+The model combines the token-level and semantic unit-level representations for the encoder.
+This allows the model to utilize both types of semantic information.
+The approach is claimed to be simple yet effective (shown in experiments later).
+
+Recap: Neural Machine Translation (NMT) The goal is to translate a source sentence (x) into a target sentence(y).
+Transformer Model The paper's method is based on this architecture, which has:
+Encoder: Processes the source sentence.
+Decoder: Generates the target sentence.
+Key Components
+Word Embeddings: Convert words to vector representations.
+Encoder/Decoder Layers:
+Self-Attention: Allows a word to consider other words in the sentence.
+Cross-Attention (Decoder only): Lets the decoder consider the source sentence for translation.
+Feed-Forward: Simple neural network for further processing.
+Training
+Autoregressive: Translation is done word by word.
+Cross-Entropy Loss: Used to optimize model during training.
+Attention
+Fundamental concept for transformers explained.
+
+
+2.2 Byte Pair Encoding (BPE)
+
+OOV Problem: Traditional NMT can struggle with words not seen in the training data (out-of-vocabulary problem).
+BPE Solution: This method addresses OOV by segmenting words into subwords based on training data statistics.
+BPE Levels: It operates on three levels: character, subword, and word.
+BPE Process:
+Learning: (on training data only)
+Splits words into characters.
+Merges the most frequent character pairs iteratively (10k-40k times).
+Records merges in a BPE code table.
+Application: (on training, validation, and test sets)
+Follows the BPE code table to perform merges.
+Adds "@@" to subwords that don't end a word (e.g., "training" becomes "train@@" and "ing").
+3. Method
+
+This section details the proposed method (refer to Figure 2 in the paper for visualization).
+Attentive Semantic Fusion (ASF) Module:
+Introduced between the encoder layers and token embedding layer in the Transformer model.
+Takes representations of multiple tokens (forming a semantic unit) as input.
+Integrates information from each token to create a single vector representing the entire semantic unit.
+Dual-level Encoder Input:
+The model uses both token-level and semantic unit-level representations.
+Token-level provides detailed information.
+Semantic unit-level captures the combined meaning of multiple tokens.
+These representations are concatenated before feeding into the first encoder layer.
+Word Pair Encoding (WPE):
+A separate (offline) method for extracting semantic unit boundaries from sentences.
+Details of WPE will likely be explained in a later section.
+
+
+3.3 Extracting Semantic Spans
+
+Types of Semantic Units:
+Words composed of subwords (identified by BPE marks "@@").
+Phrases (groups of words).
+Phrase Extraction Challenge:
+Prior methods often rely on parsing tools, which can be slow.
+Word Pair Encoding (WPE):
+A new method for efficient phrase extraction.
+Focuses on identifying phrase boundaries, not full syntactic structure.
+Inspired by BPE, but operates on words instead of characters.
+Key Differences between WPE and BPE:
+Basic Unit: WPE uses words/sub-phrases, BPE uses characters/subwords.
+Merge Rule:
+BPE merges most frequent co-occurring characters/subwords.
+WPE uses a scoring function (Eq. 3) to identify meaningful phrases:
+Considers co-occurrence frequency (count(w1, w2)).
+Penalizes frequent co-occurrences of stop words and punctuation (δ).
+WPE and BPE Workflow (refer to Figure 3):
+Both methods are trained on raw text (X) to create separate tables.
+WPE is applied first to identify phrases (XW, red boxes).
+BPE is then applied to XW (XW_B, purple boxes).
+Special WPE signs (#&$) are removed to create sub-word level sentences (XB).
+This achieves the goal of identifying semantic units regardless of subwords or words.
+Practical Considerations:
+Long segments in the training corpus can introduce noise.
+WPE clips phrases longer than 6 tokens to mitigate this issue.
+Overall, WPE is a fast and efficient method for identifying phrase boundaries, which helps extract semantic units for the model.
+
+
+
+The provided passage describes the experimental setup for evaluating the effectiveness of the SU4MT approach on machine translation tasks. Here's a breakdown of the key points:
+
+Datasets:
+
+Three datasets are used for evaluation:
+English-to-German (En→De) from WMT14 (small size)
+English-to-Romanian (En→Ro) from WMT16 (medium size)
+English-to-Chinese (En→Zh) from WMT17 (large size)
+Data Preprocessing:
+
+Training data is cleaned to remove:
+Very short/long sentences
+Sentences with extremely long words
+Sentence pairs with imbalanced source/target lengths (En→De only)
+Additional cleaning for En→Zh:
+Non-printable characters
+Duplicate or empty lines
+Validation and test sets are defined for each task.
+Tokenization and BPE:
+
+Tokenization tools are used to segment text into words/subwords:
+mosesdecoder for English, German, and Romanian
+jieba for Chinese
+Byte Pair Encoding (BPE) is applied to create a shared vocabulary:
+En→De and En→Ro: joint BPE with 32,768 merges and vocabulary size
+En→Zh: separate BPE for English and Chinese with independent vocabulary sizes (around 34k for English, 52k for Chinese)
+Word Pair Encoding (WPE):
+
+This is the proposed method for identifying semantic unit boundaries.
+Same settings are used for all tasks:
+δ value of 100
+10,000 WPE merges
+Spans longer than 6 tokens are removed
+Overall, the experiment design aims to evaluate the SU4MT model's performance across different data sizes and languages while ensuring consistent data preprocessing and semantic unit extraction through WPE.
+
+
+
+The provided passage dives into the implementation details of the experiments, including training, inference, and evaluation stages. Here's a breakdown of the key points:
+
+Training Stage:
+
+Hyperparameter Settings:
+Consistent across all tasks and model sizes for SU4MT and baseline methods.
+Learning rate: 7e-4
+Batch size: 32k
+Adam optimizer with β = (0.9, 0.98) and ϵ = 1e-8
+Dropout rate:
+Base setting models: 0.1
+Large setting models:
+En→Ro, En→De: 0.3
+En→Zh: 0.1
+SU4MT Training Strategy:
+Pretrain-finetune approach for better stability.
+Transformer model is first trained for half the total convergence steps.
+This helps stabilize token embedding parameters before introducing the ASF layer.
+Exception: En→Ro task (trained from scratch due to fast convergence).
+UMST Reproduction:
+Re-implemented based on the paper's description.
+20k BPE merge operations used for WMT16 En→Ro task (as corrected by the authors).
+Inference Stage:
+
+The last 5 checkpoints are averaged as the final model for all experiments.
+Model checkpoints are saved:
+Every epoch for En→Ro and En→De tasks.
+Every 5,000 steps for the En→Zh task.
+Evaluation Stage:
+
+Three statistical metrics and two model-based metrics are reported.
+Due to space limitations, the focus here is on two mainstream metrics, with the complete list provided in Appendix A.
+Metrics by Translation Task:
+En→Ro & En→De:
+Multi-BLEU: for comparison with previous work.
+SacreBLEU: a more objective metric for future work.
+En→Zh:
+SacreBLEU
+ChrF (Character F1 Score)
+Model-based Metrics:
+COMET 3
+BLEURT 4
+Overall, the experiment setup seems comprehensive and considers training stability, convergence, and evaluation with multiple metrics for different language pairs.
+
+http://arxiv.org/pdf/2310.11360

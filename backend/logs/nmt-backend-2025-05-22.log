@@ -1,0 +1,10 @@
+2025-05-22 19:17:28,572 - app.main - INFO - ================================================================================
+2025-05-22 19:17:28,573 - app.main - INFO - Logging initialized. Log file: /home/trung/Documents/ML/Translation/NMT_Managemnt_Experiments/backend/logs/nmt-backend-2025-05-22.log
+2025-05-22 19:17:28,573 - app.main - INFO - Log level: INFO, Rotation: daily, Retention: 30 days
+2025-05-22 19:17:28,573 - app.main - INFO - Application starting at 2025-05-22 19:17:28
+2025-05-22 19:17:28,573 - app.main - INFO - ================================================================================
+2025-05-22 19:17:28,646 - app.main - INFO - Starting server, checking for pending evaluation jobs...
+2025-05-22 19:17:28,647 - app.main - INFO - Created log cleanup script at: /home/trung/Documents/ML/Translation/NMT_Managemnt_Experiments/backend/logs/cleanup_logs.py
+2025-05-22 19:17:28,657 - app.main - INFO - Scheduled log cleanup cronjob to run at 1:00 AM on the first day of each month
+2025-05-22 19:17:28,657 - app.main - INFO - Log cleanup cronjob setup successfully
+2025-05-22 19:17:28,682 - app.main - INFO - No pending evaluation jobs found

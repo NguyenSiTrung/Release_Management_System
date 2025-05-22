@@ -1,8 +1,12 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from app.db.models import Testset
+import os
+import shutil
+from fastapi import UploadFile
+from app.db.models import Testset, EvaluationJob, TrainingResult
 from app.schemas.testset import TestsetCreate, TestsetUpdate
+from app.core.config import settings
 
 
 def get_testsets(
@@ -19,14 +23,12 @@ def get_testsets(
 
 def get_testset(db: Session, testset_id: int) -> Optional[Testset]:
     """
-    Get a specific testset by its ID.
+    Get testset by ID.
     """
     return db.query(Testset).filter(Testset.testset_id == testset_id).first()
 
 
-def create_testset(
-    db: Session, testset_in: TestsetCreate
-) -> Testset:
+def create_testset(db: Session, testset_in: TestsetCreate) -> Testset:
     """
     Create a new testset.
     """
@@ -43,19 +45,29 @@ def create_testset(
     return db_testset
 
 
-def update_testset(
-    db: Session, testset_id: int, testset: TestsetUpdate
-) -> Testset:
+def update_testset(db: Session, testset_id: int, testset: Dict[str, Any] | TestsetUpdate) -> Testset:
     """
     Update a testset.
     """
     db_testset = get_testset(db, testset_id)
-    if db_testset:
+    if not db_testset:
+        return None
+
+    # If it's a Pydantic model, convert to dict
+    update_data = {}
+    if hasattr(testset, "dict"):
+        # Convert Pydantic model to dict
         update_data = testset.dict(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_testset, field, value)
-        db.commit()
-        db.refresh(db_testset)
+    else:
+        # Already a dict
+        update_data = testset
+
+    for key, value in update_data.items():
+        setattr(db_testset, key, value)
+
+    db.add(db_testset)
+    db.commit()
+    db.refresh(db_testset)
     return db_testset
 
 
@@ -64,8 +76,63 @@ def delete_testset(db: Session, testset_id: int) -> bool:
     Delete a testset.
     """
     db_testset = get_testset(db, testset_id)
-    if db_testset:
-        db.delete(db_testset)
-        db.commit()
-        return True
-    return False 
+    if not db_testset:
+        return False
+    
+    # Delete associated files if they exist
+    if db_testset.source_file_path_on_server and os.path.exists(db_testset.source_file_path_on_server):
+        try:
+            os.remove(db_testset.source_file_path_on_server)
+        except Exception as e:
+            print(f"Error removing source file: {str(e)}")
+            
+    if db_testset.target_file_path_on_server and os.path.exists(db_testset.target_file_path_on_server):
+        try:
+            os.remove(db_testset.target_file_path_on_server)
+        except Exception as e:
+            print(f"Error removing target file: {str(e)}")
+    
+    # Try to remove the testset directory
+    testset_dir = os.path.join(settings.MODEL_FILES_STORAGE_PATH, "testsets", str(testset_id))
+    if os.path.exists(testset_dir):
+        try:
+            os.rmdir(testset_dir)  # Will only succeed if directory is empty
+        except OSError:
+            pass  # Directory not empty, ignore
+
+    db.delete(db_testset)
+    db.commit()
+    return True
+
+
+def save_uploaded_file(file: UploadFile, testset_id: int, file_type: str) -> tuple:
+    """
+    Save an uploaded file to the appropriate directory and return the filename and path
+    
+    Args:
+        file: The uploaded file
+        testset_id: The testset ID to create the directory for
+        file_type: Either 'source' or 'target'
+    
+    Returns:
+        tuple: (original_filename, server_path)
+    """
+    # Create testsets directory if it doesn't exist
+    testsets_dir = os.path.join(settings.MODEL_FILES_STORAGE_PATH, "testsets")
+    os.makedirs(testsets_dir, exist_ok=True)
+    
+    # Create testset directory if it doesn't exist
+    testset_dir = os.path.join(testsets_dir, str(testset_id))
+    os.makedirs(testset_dir, exist_ok=True)
+    
+    # Get original filename
+    original_filename = file.filename
+    
+    # Create server path
+    server_path = os.path.join(testset_dir, original_filename)
+    
+    # Save file
+    with open(server_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    return original_filename, server_path 

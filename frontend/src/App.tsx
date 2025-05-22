@@ -12,6 +12,7 @@ import ModelVersionDetail from './pages/ModelVersionDetail';
 import Testsets from './pages/Testsets';
 import Visualizations from './pages/Visualizations';
 import Users from './pages/Users';
+import EvaluationTranslation from './pages/EvaluationTranslation';
 
 // Create theme
 const theme = createTheme({
@@ -52,6 +53,7 @@ const App: React.FC = () => {
                 <Route path="/model-versions/:versionId" element={<ModelVersionDetail />} />
                 <Route path="/testsets" element={<Testsets />} />
                 <Route path="/visualizations" element={<Visualizations />} />
+                <Route path="/evaluation-translation" element={<EvaluationTranslation />} />
                 <Route path="/users" element={<Users />} />
               </Route>
             </Route>

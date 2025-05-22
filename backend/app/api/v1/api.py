@@ -7,7 +7,8 @@ from app.api.v1.endpoints import (
     testsets,
     training_results,
     release_notes,
-    visualizations
+    visualizations,
+    evaluations
 )
 
 api_router = APIRouter()
@@ -20,3 +21,4 @@ api_router.include_router(testsets.router, prefix="/testsets", tags=["testsets"]
 api_router.include_router(training_results.router, prefix="/training-results", tags=["training results"])
 api_router.include_router(release_notes.router, prefix="/release-notes", tags=["release notes"])
 api_router.include_router(visualizations.router, prefix="/visualizations", tags=["visualizations"]) 
+api_router.include_router(evaluations.router, prefix="/evaluations", tags=["evaluations"]) 

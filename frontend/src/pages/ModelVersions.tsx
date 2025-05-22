@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -42,13 +42,9 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
   getLanguagePairs,
-  getModelVersions,
-  createModelVersion,
-  updateModelVersion,
-  deleteModelVersion,
   exportModelVersions,
-  getModelVersion,
 } from '../services/api';
+import * as modelVersionService from '../services/modelVersionService';
 import { LanguagePair, ModelVersion } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import PageHeader from '../components/common/PageHeader';
@@ -96,6 +92,42 @@ const ModelVersionsPage: React.FC = () => {
   const [exportFormat, setExportFormat] = useState<'excel' | 'markdown'>('excel');
   const [isExporting, setIsExporting] = useState(false);
 
+  // Add file state
+  const [modelFile, setModelFile] = useState<File | null>(null);
+  const [hparamsFile, setHparamsFile] = useState<File | null>(null);
+  const [modelFileName, setModelFileName] = useState<string>('');
+  const [hparamsFileName, setHparamsFileName] = useState<string>('');
+
+  // Fetch language pairs for dropdown
+  const fetchLanguagePairs = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await getLanguagePairs();
+      setLanguagePairs(data);
+    } catch (err) {
+      console.error('Error fetching language pairs:', err);
+      setError('Failed to load language pairs. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch model versions when a language pair is selected
+  const fetchModelVersions = useCallback(async (langPairId: number) => {
+    try {
+      setIsLoadingVersions(true);
+      setError(null);
+      const data = await modelVersionService.getModelVersions(langPairId);
+      setModelVersions(data);
+      setFilteredVersions(data);
+    } catch (err) {
+      console.error('Error fetching model versions:', err);
+      setError('Failed to load model versions. Please try again.');
+    } finally {
+      setIsLoadingVersions(false);
+    }
+  }, []);
+
   // Parse URL parameters and check localStorage
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -122,7 +154,7 @@ const ModelVersionsPage: React.FC = () => {
         // If editing a model version, open the edit dialog
         if (editVersionId) {
           const versionIdNum = parseInt(editVersionId);
-          const versionToEdit = await getModelVersion(versionIdNum);
+          const versionToEdit = await modelVersionService.getModelVersion(versionIdNum);
           if (versionToEdit) {
             handleOpenEditDialog(versionToEdit);
             
@@ -134,7 +166,7 @@ const ModelVersionsPage: React.FC = () => {
     };
     
     init();
-  }, [location.search]);
+  }, [location.search, fetchLanguagePairs, fetchModelVersions, navigate]);
 
   // Add a new effect to save selected language pair to localStorage when it changes
   useEffect(() => {
@@ -142,36 +174,6 @@ const ModelVersionsPage: React.FC = () => {
       localStorage.setItem(STORAGE_KEY_LANGUAGE_PAIR, selectedLangPair.toString());
     }
   }, [selectedLangPair]);
-
-  // Fetch language pairs for dropdown
-  const fetchLanguagePairs = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getLanguagePairs();
-      setLanguagePairs(data);
-    } catch (err) {
-      console.error('Error fetching language pairs:', err);
-      setError('Failed to load language pairs. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Fetch model versions when a language pair is selected
-  const fetchModelVersions = async (langPairId: number) => {
-    try {
-      setIsLoadingVersions(true);
-      setError(null);
-      const data = await getModelVersions(langPairId);
-      setModelVersions(data);
-      setFilteredVersions(data);
-    } catch (err) {
-      console.error('Error fetching model versions:', err);
-      setError('Failed to load model versions. Please try again.');
-    } finally {
-      setIsLoadingVersions(false);
-    }
-  };
 
   // Filter model versions based on search term
   useEffect(() => {
@@ -200,6 +202,29 @@ const ModelVersionsPage: React.FC = () => {
     }
   };
 
+  // Handle file selection
+  const handleModelFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setModelFile(event.target.files[0]);
+      setModelFileName(event.target.files[0].name);
+    }
+  };
+
+  const handleHparamsFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setHparamsFile(event.target.files[0]);
+      setHparamsFileName(event.target.files[0].name);
+    }
+  };
+
+  // Reset file inputs
+  const resetFileInputs = () => {
+    setModelFile(null);
+    setHparamsFile(null);
+    setModelFileName('');
+    setHparamsFileName('');
+  };
+
   // Formik setup for model version form
   const formik = useFormik({
     initialValues: {
@@ -212,10 +237,10 @@ const ModelVersionsPage: React.FC = () => {
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
         if (dialogMode === 'create') {
-          const newVersion = await createModelVersion({
+          const newVersion = await modelVersionService.createModelVersion({
             ...values,
             lang_pair_id: Number(values.lang_pair_id),
-          });
+          }, modelFile || undefined, hparamsFile || undefined);
           
           handleCloseDialog();
           resetForm();
@@ -225,11 +250,11 @@ const ModelVersionsPage: React.FC = () => {
             state: { newlyCreated: true, message: 'Model Version created successfully. Please add training results with BLEU and COMET scores.' } 
           });
         } else if (dialogMode === 'edit' && selectedVersion) {
-          await updateModelVersion(selectedVersion.version_id, {
+          await modelVersionService.updateModelVersion(selectedVersion.version_id, {
             version_name: values.version_name,
             release_date: values.release_date || undefined,
             description: values.description || undefined,
-          });
+          }, modelFile || undefined, hparamsFile || undefined);
           
           handleCloseDialog();
           resetForm();
@@ -251,6 +276,7 @@ const ModelVersionsPage: React.FC = () => {
     formik.resetForm();
     formik.setFieldValue('lang_pair_id', selectedLangPair);
     setDialogMode('create');
+    resetFileInputs();
     setOpenDialog(true);
   };
 
@@ -264,6 +290,7 @@ const ModelVersionsPage: React.FC = () => {
     });
     setSelectedVersion(version);
     setDialogMode('edit');
+    resetFileInputs();
     setOpenDialog(true);
   };
 
@@ -272,6 +299,7 @@ const ModelVersionsPage: React.FC = () => {
     setOpenDialog(false);
     setSelectedVersion(null);
     formik.resetForm();
+    resetFileInputs();
   };
 
   // Open confirm dialog for deleting a model version
@@ -286,7 +314,7 @@ const ModelVersionsPage: React.FC = () => {
     
     try {
       setIsDeleting(true);
-      await deleteModelVersion(versionToDelete.version_id);
+      await modelVersionService.deleteModelVersion(versionToDelete.version_id);
       
       if (selectedLangPair !== '') {
         await fetchModelVersions(selectedLangPair as number);
@@ -625,6 +653,55 @@ const ModelVersionsPage: React.FC = () => {
                   }
                   helperText={formik.touched.description && formik.errors.description}
                 />
+              </Grid>
+              
+              {/* Add file upload fields */}
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Model Files (Optional)
+                </Typography>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<CloudDownloadIcon />}
+                >
+                  {modelFileName || "Upload Model File"}
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleModelFileChange}
+                  />
+                </Button>
+                {modelFileName && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected file: {modelFileName}
+                  </Typography>
+                )}
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<CloudDownloadIcon />}
+                >
+                  {hparamsFileName || "Upload Hyperparameters File"}
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleHparamsFileChange}
+                  />
+                </Button>
+                {hparamsFileName && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected file: {hparamsFileName}
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </DialogContent>

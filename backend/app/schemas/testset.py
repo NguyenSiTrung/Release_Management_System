@@ -19,6 +19,10 @@ class TestsetUpdate(BaseModel):
 
 class TestsetInDBBase(TestsetBase):
     testset_id: int
+    source_file_name: Optional[str] = None
+    target_file_name: Optional[str] = None
+    source_file_path_on_server: Optional[str] = None
+    target_file_path_on_server: Optional[str] = None
     created_at: str
     updated_at: str
 

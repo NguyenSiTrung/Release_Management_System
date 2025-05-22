@@ -48,6 +48,15 @@ export interface ModelVersion {
   description: string | null;
   created_at: string;
   updated_at: string;
+  model_file_name?: string | null;
+  hparams_file_name?: string | null;
+  base_model_file_name?: string | null;
+  base_hparams_file_name?: string | null;
+}
+
+export interface ModelVersionDetail extends ModelVersion {
+  release_note?: ReleaseNote | null;
+  training_results: TrainingResult[];
 }
 
 export interface ModelVersionCreate {
@@ -61,6 +70,7 @@ export interface ModelVersionUpdate {
   version_name?: string;
   release_date?: string;
   description?: string;
+  lang_pair_id?: number;
 }
 
 // Testset types
@@ -71,6 +81,10 @@ export interface Testset {
   description: string | null;
   source_file_path: string | null;
   target_file_path: string | null;
+  source_file_name: string | null;
+  target_file_name: string | null;
+  source_file_path_on_server: string | null;
+  target_file_path_on_server: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -158,3 +172,6 @@ export interface ProgressDataPoint {
   release_date: string | null;
   score: number | null;
 } 
+
+// Export all evaluation types
+export * from './evaluation'; 

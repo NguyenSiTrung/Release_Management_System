@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -33,8 +33,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -92,10 +91,11 @@ const Dashboard: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    };
-    
-    fetchDashboardData();
   }, []);
+    
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const getLanguagePairName = (langPairId: number) => {
     const langPair = langPairs.find(lp => lp.lang_pair_id === langPairId);

@@ -26,6 +26,7 @@ import {
   BarChart as VisualizationIcon,
   People as PeopleIcon,
   ChevronLeft as ChevronLeftIcon,
+  Science as ScienceIcon,
 } from '@mui/icons-material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -111,6 +112,7 @@ const MainLayout: React.FC = () => {
     { text: 'Model Versions', icon: <CodeIcon />, path: '/model-versions' },
     { text: 'Testsets', icon: <TestsetIcon />, path: '/testsets' },
     { text: 'Visualizations', icon: <VisualizationIcon />, path: '/visualizations' },
+    { text: 'Evaluation & Translation', icon: <ScienceIcon />, path: '/evaluation-translation' },
   ];
 
   // Add User Management for admins

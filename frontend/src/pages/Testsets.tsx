@@ -23,11 +23,14 @@ import {
   Grid,
   Typography,
   SelectChangeEvent,
+  Chip,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Search as SearchIcon,
+  CloudDownload as CloudDownloadIcon,
+  Upload as UploadIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -37,6 +40,7 @@ import {
   createTestset,
   updateTestset,
   deleteTestset,
+  downloadTestsetFile
 } from '../services/api';
 import { LanguagePair, Testset } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,8 +54,6 @@ const validationSchema = Yup.object({
   testset_name: Yup.string().required('Testset name is required'),
   lang_pair_id: Yup.number().required('Language pair is required'),
   description: Yup.string(),
-  source_file_path: Yup.string(),
-  target_file_path: Yup.string(),
 });
 
 const TestsetsPage: React.FC = () => {
@@ -70,6 +72,10 @@ const TestsetsPage: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedTestset, setSelectedTestset] = useState<Testset | null>(null);
+  
+  // File states
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [targetFile, setTargetFile] = useState<File | null>(null);
   
   // Confirm dialog state
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -138,6 +144,55 @@ const TestsetsPage: React.FC = () => {
       fetchTestsets(langPairId);
     }
   };
+  
+  // Handle file change
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, fileType: 'source' | 'target') => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (fileType === 'source') {
+        setSourceFile(file);
+      } else {
+        setTargetFile(file);
+      }
+    }
+  };
+  
+  // Handle file download
+  const handleDownloadFile = async (testsetId: number, fileType: 'source' | 'target') => {
+    try {
+      const fileBlob = await downloadTestsetFile(testsetId, fileType);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(fileBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Get the testset
+      const testset = testsets.find(t => t.testset_id === testsetId);
+      if (!testset) return;
+      
+      // Set file name based on file type
+      let fileName;
+      if (fileType === 'source') {
+        fileName = testset.source_file_name || `source_${testsetId}.txt`;
+      } else {
+        fileName = testset.target_file_name || `target_${testsetId}.txt`;
+      }
+      
+      a.download = fileName;
+      
+      // Trigger download
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error(`Failed to download ${fileType} file:`, error);
+      setError(`Failed to download ${fileType} file. Please try again.`);
+    }
+  };
 
   // Formik setup for testset form
   const formik = useFormik({
@@ -155,15 +210,17 @@ const TestsetsPage: React.FC = () => {
           await createTestset({
             ...values,
             lang_pair_id: Number(values.lang_pair_id),
-          });
+          }, sourceFile || undefined, targetFile || undefined);
         } else if (dialogMode === 'edit' && selectedTestset) {
           await updateTestset(selectedTestset.testset_id, {
             testset_name: values.testset_name,
             description: values.description || undefined,
-            source_file_path: values.source_file_path || undefined,
-            target_file_path: values.target_file_path || undefined,
-          });
+          }, sourceFile || undefined, targetFile || undefined);
         }
+        
+        // Reset file states
+        setSourceFile(null);
+        setTargetFile(null);
         
         handleCloseDialog();
         resetForm();
@@ -203,6 +260,8 @@ const TestsetsPage: React.FC = () => {
     formik.resetForm();
     formik.setFieldValue('lang_pair_id', selectedLangPair);
     setDialogMode('create');
+    setSourceFile(null);
+    setTargetFile(null);
     setOpenDialog(true);
   };
 
@@ -217,6 +276,8 @@ const TestsetsPage: React.FC = () => {
     });
     setSelectedTestset(testset);
     setDialogMode('edit');
+    setSourceFile(null);
+    setTargetFile(null);
     setOpenDialog(true);
   };
 
@@ -224,6 +285,8 @@ const TestsetsPage: React.FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedTestset(null);
+    setSourceFile(null);
+    setTargetFile(null);
     formik.resetForm();
   };
 
@@ -249,9 +312,17 @@ const TestsetsPage: React.FC = () => {
       
       setOpenConfirmDialog(false);
       setTestsetToDelete(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting testset:', err);
-      setError('Failed to delete testset. It may be in use by model versions.');
+      
+      // Get the specific error message from the backend if available
+      let errorMessage = 'Failed to delete testset.';
+      if (err.response && err.response.data && err.response.data.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      
+      setError(errorMessage);
+      setOpenConfirmDialog(false);
     } finally {
       setIsDeleting(false);
     }
@@ -317,7 +388,7 @@ const TestsetsPage: React.FC = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              placeholder="Search by name or description"
+              placeholder="Search testsets by name or description"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
@@ -333,59 +404,97 @@ const TestsetsPage: React.FC = () => {
 
         {isLoadingTestsets ? (
           <LoadingIndicator message="Loading testsets..." />
-        ) : filteredTestsets.length > 0 ? (
+        ) : filteredTestsets.length === 0 ? (
+          <Typography variant="body1" align="center" sx={{ py: 4 }}>
+            No testsets found. {isReleaseManager && 'Click "Add New Testset" to create one.'}
+          </Typography>
+        ) : (
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Name</TableCell>
+                  <TableCell>Testset Name</TableCell>
                   <TableCell>Language Pair</TableCell>
                   <TableCell>Description</TableCell>
-                  <TableCell>Created At</TableCell>
-                  {isReleaseManager && <TableCell>Actions</TableCell>}
+                  <TableCell>Source File</TableCell>
+                  <TableCell>Target File</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredTestsets.map((testset) => (
                   <TableRow key={testset.testset_id}>
-                    <TableCell>{testset.testset_id}</TableCell>
                     <TableCell>{testset.testset_name}</TableCell>
                     <TableCell>{getLanguagePairName(testset.lang_pair_id)}</TableCell>
-                    <TableCell>{testset.description || '-'}</TableCell>
+                    <TableCell>{testset.description || '—'}</TableCell>
                     <TableCell>
-                      {new Date(testset.created_at).toLocaleDateString()}
+                      {testset.source_file_name ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip 
+                            label={testset.source_file_name} 
+                            size="small" 
+                            sx={{ mr: 1 }} 
+                          />
+                          <IconButton 
+                            size="small" 
+                            color="primary"
+                            onClick={() => handleDownloadFile(testset.testset_id, 'source')}
+                          >
+                            <CloudDownloadIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        testset.source_file_path || '—'
+                      )}
                     </TableCell>
+                    <TableCell>
+                      {testset.target_file_name ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip 
+                            label={testset.target_file_name} 
+                            size="small" 
+                            sx={{ mr: 1 }} 
+                          />
+                          <IconButton 
+                            size="small" 
+                            color="primary"
+                            onClick={() => handleDownloadFile(testset.testset_id, 'target')}
+                          >
+                            <CloudDownloadIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        testset.target_file_path || '—'
+                      )}
+                    </TableCell>
+                    <TableCell>
                     {isReleaseManager && (
-                      <TableCell>
-                        <IconButton onClick={() => handleOpenEditDialog(testset)} size="small">
-                          <EditIcon />
+                        <>
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() => handleOpenEditDialog(testset)}
+                          >
+                            <EditIcon fontSize="small" />
                         </IconButton>
-                        <IconButton onClick={() => handleOpenDeleteDialog(testset)} size="small">
-                          <DeleteIcon />
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleOpenDeleteDialog(testset)}
+                          >
+                            <DeleteIcon fontSize="small" />
                         </IconButton>
+                        </>
+                      )}
                       </TableCell>
-                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
-        ) : (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body1">
-              No testsets found.{' '}
-              {isReleaseManager && (
-                <Button onClick={handleOpenCreateDialog} color="primary">
-                  Create a new testset
-                </Button>
-              )}
-            </Typography>
-          </Box>
         )}
       </Paper>
 
-      {/* Create/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
           {dialogMode === 'create' ? 'Create New Testset' : 'Edit Testset'}
@@ -442,31 +551,73 @@ const TestsetsPage: React.FC = () => {
                   margin="normal"
                 />
               </Grid>
+              
+              {/* Source File Upload */}
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  id="source_file_path"
-                  name="source_file_path"
-                  label="Source File Path"
-                  value={formik.values.source_file_path}
-                  onChange={formik.handleChange}
-                  error={formik.touched.source_file_path && Boolean(formik.errors.source_file_path)}
-                  helperText={formik.touched.source_file_path && formik.errors.source_file_path}
-                  margin="normal"
-                />
+                <Typography variant="subtitle1" gutterBottom>
+                  Source File
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<UploadIcon />}
+                    sx={{ mr: 2 }}
+                  >
+                    {sourceFile ? 'Replace File' : 'Upload File'}
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => handleFileChange(e, 'source')}
+                    />
+                  </Button>
+                  {sourceFile && (
+                    <Typography variant="body2">
+                      {sourceFile.name} ({Math.round(sourceFile.size / 1024)} KB)
+                    </Typography>
+                  )}
+                </Box>
+                {dialogMode === 'edit' && selectedTestset?.source_file_name && !sourceFile && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Current file: {selectedTestset.source_file_name}
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
+              
+              {/* Target File Upload */}
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  id="target_file_path"
-                  name="target_file_path"
-                  label="Target File Path"
-                  value={formik.values.target_file_path}
-                  onChange={formik.handleChange}
-                  error={formik.touched.target_file_path && Boolean(formik.errors.target_file_path)}
-                  helperText={formik.touched.target_file_path && formik.errors.target_file_path}
-                  margin="normal"
-                />
+                <Typography variant="subtitle1" gutterBottom>
+                  Target File
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<UploadIcon />}
+                    sx={{ mr: 2 }}
+                  >
+                    {targetFile ? 'Replace File' : 'Upload File'}
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => handleFileChange(e, 'target')}
+                    />
+                  </Button>
+                  {targetFile && (
+                    <Typography variant="body2">
+                      {targetFile.name} ({Math.round(targetFile.size / 1024)} KB)
+                    </Typography>
+                  )}
+                </Box>
+                {dialogMode === 'edit' && selectedTestset?.target_file_name && !targetFile && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Current file: {selectedTestset.target_file_name}
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
             </Grid>
           </DialogContent>
