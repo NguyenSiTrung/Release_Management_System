@@ -116,6 +116,11 @@ def migrate_db():
         print("Adding evaluation_model_type column to evaluation_jobs table...")
         cursor.execute("ALTER TABLE evaluation_jobs ADD COLUMN evaluation_model_type TEXT DEFAULT 'finetuned'")
     
+    # Add base_model_result column to evaluation_jobs table if it doesn't exist
+    if 'base_model_result' not in eval_columns:
+        print("Adding base_model_result column to evaluation_jobs table...")
+        cursor.execute("ALTER TABLE evaluation_jobs ADD COLUMN base_model_result TEXT")
+    
     # Check testsets table columns
     cursor.execute("PRAGMA table_info(testsets)")
     testset_columns = [column[1] for column in cursor.fetchall()]
@@ -156,6 +161,58 @@ def migrate_db():
     conn.commit()
     conn.close()
     print("Database migration completed successfully.")
+
+def migration_6(engine):
+    """
+    Migration 6: Add base_model_result field to evaluation_jobs table
+    """
+    logger.info("Running migration 6: Add base_model_result field to evaluation_jobs table")
+    
+    try:
+        # Check if base_model_result column exists
+        result = engine.execute(text("PRAGMA table_info(evaluation_jobs)"))
+        columns = [row[1] for row in result]
+        
+        if 'base_model_result' not in columns:
+            logger.info("Adding base_model_result column to evaluation_jobs table")
+            engine.execute(text("""
+                ALTER TABLE evaluation_jobs 
+                ADD COLUMN base_model_result TEXT NULL
+            """))
+            logger.info("Successfully added base_model_result column")
+        else:
+            logger.info("base_model_result column already exists, skipping")
+            
+    except Exception as e:
+        logger.error(f"Error in migration 6: {str(e)}")
+        raise
+    
+    logger.info("Migration 6 completed successfully")
+
+def migration_7(engine):
+    """
+    Add any future migrations here
+    """
+    pass
+
+def run_migrations():
+    """
+    Run all database migrations
+    """
+    logger.info("Starting database migrations...")
+    
+    engine = create_engine(settings.DATABASE_URL)
+    
+    # Run migrations in order
+    migration_1(engine)
+    migration_2(engine)
+    migration_3(engine)
+    migration_4(engine)
+    migration_5(engine)
+    migration_6(engine)
+    # migration_7(engine)  # Uncomment when migration 7 is added
+    
+    logger.info("All migrations completed successfully!")
 
 if __name__ == "__main__":
     # Check if the database file exists

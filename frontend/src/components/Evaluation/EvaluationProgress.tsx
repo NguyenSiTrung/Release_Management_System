@@ -39,6 +39,15 @@ const EvaluationProgress: React.FC<EvaluationProgressProps> = ({
         const status = await getEvaluationStatus(jobId);
         setJobStatus(status);
         setLoadingError(null);
+        
+        // Debug logging to check response data
+        if (status.status === 'COMPLETED' && status.result) {
+          console.log('=== DEBUG: Evaluation completed ===');
+          console.log('evaluation_model_type:', status.evaluation_model_type);
+          console.log('result object:', status.result);
+          console.log('base_model_result:', status.result.base_model_result);
+          console.log('Condition check:', status.evaluation_model_type === 'both' && status.result.base_model_result);
+        }
       } catch (err: any) {
         console.error('Failed to fetch evaluation status:', err);
         setLoadingError(err.response?.data?.detail || 'Failed to load evaluation status');

@@ -57,7 +57,7 @@ def get_current_user(
         logger.warning(f"JWT validation error: {str(e)}")
         raise auth_exception
     
-    user = crud_user.get_by_id(db, user_id=token_data.sub)
+    user = crud_user.get_user(db, user_id=token_data.sub)
     if user is None:
         logger.warning(f"User with ID {token_data.sub} not found in database")
         raise HTTPException(status_code=404, detail="User not found")
@@ -71,8 +71,8 @@ def get_current_active_user(
     """
     Get the current active user
     """
-    if not current_user.is_active:
-        logger.warning(f"User {current_user.username} (ID: {current_user.user_id}) is inactive")
+    if current_user.status != "active":
+        logger.warning(f"User {current_user.username} (ID: {current_user.user_id}) is not active")
         raise HTTPException(status_code=400, detail="Inactive user")
     logger.debug(f"Active user verified: {current_user.username} (ID: {current_user.user_id})")
     return current_user
@@ -83,7 +83,7 @@ def get_current_admin_user(
     """
     Get the current admin user
     """
-    if not current_user.is_admin:
+    if current_user.role != "admin":
         logger.warning(f"Non-admin user {current_user.username} attempted admin action")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -96,9 +96,9 @@ def get_current_release_manager_user(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
     """
-    Get the current user with release manager privileges (admin or is_release_manager)
+    Get the current user with release manager privileges (admin or release_manager)
     """
-    if not (current_user.is_admin or current_user.is_release_manager):
+    if current_user.role not in ["admin", "release_manager"]:
         logger.warning(f"User {current_user.username} attempted release manager action without privileges")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -301,4 +301,49 @@ def delete_testset(
             detail="Failed to delete the testset. It may be in use by another process."
         )
     
-    return result 
+    return result
+
+@router.get("/{testset_id}/reference-content")
+def get_reference_file_content(
+    testset_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+) -> Any:
+    """
+    Get the content of the reference target file for comparison viewing
+    """
+    # Get testset
+    testset = crud_testset.get_testset(db, testset_id=testset_id)
+    if not testset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Testset not found"
+        )
+    
+    # Check if target file exists
+    if not testset.target_file_path_on_server or not os.path.exists(testset.target_file_path_on_server):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reference target file not found"
+        )
+    
+    try:
+        with open(testset.target_file_path_on_server, "r", encoding="utf-8") as file:
+            content = file.read()
+        return {"content": content}
+    except UnicodeDecodeError:
+        # Try with different encoding if UTF-8 fails
+        try:
+            with open(testset.target_file_path_on_server, "r", encoding="latin-1") as file:
+                content = file.read()
+            return {"content": content}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error reading file content: {str(e)}"
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error reading file content: {str(e)}"
+        ) 

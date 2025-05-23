@@ -27,15 +27,18 @@ import {
   TableHead,
   TableRow,
   LinearProgress,
+  Tooltip,
 } from '@mui/material';
-import { Send as SendIcon, Science as ScienceIcon, Translate as TranslateIcon } from '@mui/icons-material';
+import { Send as SendIcon, Science as ScienceIcon, Translate as TranslateIcon, Download, Compare } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { ModelVersion, EvaluationResultData, EvaluationStatus } from '../types';
 import { getModelVersions, getLanguagePairs, getTestsets } from '../services/api';
 import { runEvaluation, getEvaluationStatus, translateText } from '../services/evaluationService';
+import evaluationService from '../services/evaluationService';
 import PageHeader from '../components/common/PageHeader';
 import LoadingIndicator from '../components/common/LoadingIndicator';
+import EvaluationComparison from '../components/Evaluation/EvaluationComparison';
 // import ErrorDisplay from '../components/common/ErrorDisplay';
 
 interface TabPanelProps {
@@ -104,6 +107,11 @@ const EvaluationTranslation: React.FC = () => {
   const [translationResult, setTranslationResult] = useState<string>('');
   const [translationError, setTranslationError] = useState<string | null>(null);
 
+  // Download and comparison state
+  const [downloadingJobId, setDownloadingJobId] = useState<number | null>(null);
+  const [comparisonVisible, setComparisonVisible] = useState(false);
+  const [selectedTestsetId, setSelectedTestsetId] = useState<number | null>(null);
+
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -112,6 +120,34 @@ const EvaluationTranslation: React.FC = () => {
   // Language pair change handler
   const handleLangPairChange = (event: SelectChangeEvent<number | string>) => {
     setSelectedLangPair(event.target.value as number);
+  };
+  
+  // Download handler
+  const handleDownload = async (jobId: number) => {
+    setDownloadingJobId(jobId);
+    try {
+      const blob = await evaluationService.downloadOutputFile(jobId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `evaluation_output_${jobId}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Error downloading file:', err);
+      setError(err.response?.data?.detail || 'Failed to download file');
+    } finally {
+      setDownloadingJobId(null);
+    }
+  };
+
+  // Comparison handler
+  const handleViewComparison = () => {
+    if (evaluationJobId && selectedTestsetId) {
+      setComparisonVisible(true);
+    }
   };
   
   // Evaluation form
@@ -162,6 +198,8 @@ const EvaluationTranslation: React.FC = () => {
         setEvaluationStatus(response.status);
         setEvaluationProgress(response.progress_percentage || 0);
         
+        // Store testset_id for comparison feature
+        setSelectedTestsetId(parseInt(values.testset_id as string));
       } catch (err: any) {
         console.error('Error running evaluation:', err);
         setError(`Failed to start evaluation: ${err.response?.data?.detail || err.message}`);
@@ -408,6 +446,34 @@ const EvaluationTranslation: React.FC = () => {
             <Alert severity="success" sx={{ mt: 2 }}>
               Results have been added to the model version's training results.
             </Alert>
+          )}
+          
+          {/* Action buttons for completed evaluation */}
+          {evaluationJobId && evaluationStatus === EvaluationStatus.COMPLETED && (
+            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Tooltip title="Download output file">
+                <Button
+                  variant="outlined"
+                  startIcon={<Download />}
+                  onClick={() => handleDownload(evaluationJobId)}
+                  disabled={downloadingJobId === evaluationJobId}
+                >
+                  {downloadingJobId === evaluationJobId ? 'Downloading...' : 'Download Output'}
+                </Button>
+              </Tooltip>
+              
+              <Tooltip title="Compare output with reference">
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<Compare />}
+                  onClick={handleViewComparison}
+                  disabled={!selectedTestsetId}
+                >
+                  View Comparison
+                </Button>
+              </Tooltip>
+            </Box>
           )}
         </CardContent>
       </Card>
@@ -860,6 +926,21 @@ const EvaluationTranslation: React.FC = () => {
           )}
         </TabPanel>
       </Paper>
+      
+      {/* Comparison Modal */}
+      {evaluationJobId && selectedTestsetId && (
+        <EvaluationComparison
+          visible={comparisonVisible}
+          onClose={() => setComparisonVisible(false)}
+          jobId={evaluationJobId}
+          testsetId={selectedTestsetId}
+          jobDetails={{
+            model_version_name: getSelectedModelDetails(evaluationFormik.values.version_id)?.version_name || 'Unknown',
+            testset_name: testsets.find(t => t.testset_id === selectedTestsetId)?.testset_name || 'Unknown',
+            result: evaluationResult
+          }}
+        />
+      )}
     </Container>
   );
 };

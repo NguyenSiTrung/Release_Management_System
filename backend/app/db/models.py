@@ -144,6 +144,7 @@ class EvaluationJob(Base):
     sub_mode_type = Column(String, nullable=True)
     custom_params = Column(String, nullable=True)
     evaluation_model_type = Column(String, nullable=True, default='finetuned')  # Options: 'base', 'finetuned', 'both'
+    base_model_result = Column(Text, nullable=True)  # JSON string to store base model results when evaluation_model_type = 'both'
     
     model_version = relationship("ModelVersion", back_populates="evaluation_jobs")
     testset = relationship("Testset", back_populates="evaluation_jobs")

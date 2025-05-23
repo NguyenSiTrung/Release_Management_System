@@ -27,6 +27,51 @@ def get(db: Session, job_id: int) -> Optional[EvaluationJob]:
         logger.exception("Exception details:")
         raise
 
+def count(
+    db: Session, 
+    *, 
+    version_id: Optional[int] = None,
+    testset_id: Optional[int] = None,
+    status: Optional[EvaluationStatus] = None,
+    user_id: Optional[int] = None
+) -> int:
+    """
+    Count evaluation jobs with filtering options
+    """
+    filter_msgs = []
+    if version_id:
+        filter_msgs.append(f"version_id={version_id}")
+    if testset_id:
+        filter_msgs.append(f"testset_id={testset_id}")
+    if status:
+        filter_msgs.append(f"status={status.value}")
+    if user_id:
+        filter_msgs.append(f"user_id={user_id}")
+    
+    filter_str = ", ".join(filter_msgs) if filter_msgs else "none"
+    logger.debug(f"Counting evaluation jobs with filters: {filter_str}")
+    
+    try:
+        query = db.query(EvaluationJob)
+        
+        if version_id is not None:
+            query = query.filter(EvaluationJob.version_id == version_id)
+        if testset_id is not None:
+            query = query.filter(EvaluationJob.testset_id == testset_id)
+        if status is not None:
+            query = query.filter(EvaluationJob.status == status)
+        if user_id is not None:
+            query = query.filter(EvaluationJob.requested_by_user_id == user_id)
+            
+        total = query.count()
+        logger.debug(f"Found {total} evaluation jobs matching filters")
+        
+        return total
+    except Exception as e:
+        logger.error(f"Database error counting evaluation jobs with filters ({filter_str}): {str(e)}")
+        logger.exception("Exception details:")
+        raise
+
 def get_multi(
     db: Session, 
     *, 
@@ -63,15 +108,49 @@ def get_multi(
         if status is not None:
             query = query.filter(EvaluationJob.status == status)
         if user_id is not None:
-            query = query.filter(EvaluationJob.user_id == user_id)
+            query = query.filter(EvaluationJob.requested_by_user_id == user_id)
             
-        total = query.count()
         jobs = query.order_by(EvaluationJob.job_id.desc()).offset(skip).limit(limit).all()
-        logger.debug(f"Found {len(jobs)} evaluation jobs out of {total} total matches")
+        logger.debug(f"Found {len(jobs)} evaluation jobs")
         
         return jobs
     except Exception as e:
         logger.error(f"Database error getting evaluation jobs with filters ({filter_str}): {str(e)}")
+        logger.exception("Exception details:")
+        raise
+
+def get_by_date_range(
+    db: Session,
+    *,
+    start_date: datetime,
+    end_date: datetime,
+    version_id: Optional[int] = None,
+    status: Optional[EvaluationStatus] = None
+) -> List[EvaluationJob]:
+    """
+    Get evaluation jobs within a date range
+    """
+    logger.debug(f"Getting evaluation jobs in date range: {start_date} to {end_date}")
+    
+    try:
+        query = db.query(EvaluationJob).filter(
+            and_(
+                EvaluationJob.requested_at >= start_date,
+                EvaluationJob.requested_at <= end_date
+            )
+        )
+        
+        if version_id is not None:
+            query = query.filter(EvaluationJob.version_id == version_id)
+        if status is not None:
+            query = query.filter(EvaluationJob.status == status)
+            
+        jobs = query.order_by(EvaluationJob.requested_at.desc()).all()
+        logger.debug(f"Found {len(jobs)} evaluation jobs in date range")
+        
+        return jobs
+    except Exception as e:
+        logger.error(f"Database error getting evaluation jobs by date range: {str(e)}")
         logger.exception("Exception details:")
         raise
 
@@ -212,11 +291,12 @@ def get_with_details(db: Session, job_id: int) -> Optional[Dict[str, Any]]:
             "mode_type": result.EvaluationJob.mode_type,
             "sub_mode_type": result.EvaluationJob.sub_mode_type,
             "custom_params": result.EvaluationJob.custom_params,
-            "evaluation_model_type": result.EvaluationJob.evaluation_model_type
+            "evaluation_model_type": result.EvaluationJob.evaluation_model_type,
+            "base_model_result": result.EvaluationJob.base_model_result
         }
         
         logger.debug(f"Found detailed evaluation job with ID: {job_id}, status: {result.EvaluationJob.status}")
-        return job_dict
+        return job_dict 
     except Exception as e:
         logger.error(f"Database error getting detailed evaluation job {job_id}: {str(e)}")
         logger.exception("Exception details:")
@@ -245,4 +325,10 @@ def delete(db: Session, *, job_id: int) -> Optional[EvaluationJob]:
         db.rollback()
         logger.error(f"Database error deleting job {job_id}: {str(e)}")
         logger.exception("Exception details:")
-        raise 
+        raise
+
+def remove(db: Session, *, job_id: int) -> Optional[EvaluationJob]:
+    """
+    Remove an evaluation job (alias for delete)
+    """
+    return delete(db, job_id=job_id) 

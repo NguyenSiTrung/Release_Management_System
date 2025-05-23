@@ -54,6 +54,9 @@ export interface EvaluationJob {
   status: EvaluationStatus;
   bleu_score?: number;
   comet_score?: number;
+  base_model_bleu_score?: number;
+  base_model_comet_score?: number;
+  base_model_output_file_path?: string;
   output_file_path?: string;
   log_message?: string;
   auto_add_to_details_requested: boolean;

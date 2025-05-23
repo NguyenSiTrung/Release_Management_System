@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     MODEL_FILES_STORAGE_PATH: str = os.getenv("MODEL_FILES_STORAGE_PATH", str(BASE_DIR / "storage" / "models"))
     
     # Evaluation Settings
+    FAKE_EVALUATION_MODE: bool = os.getenv("FAKE_EVALUATION_MODE", "false").lower() == "true"
     T2T_RESOURCES_BASE_PATH: str = os.getenv("T2T_RESOURCES_BASE_PATH", "/home/hongthaing/hdd1/users/hongthaing/t2t-resources/resources/directions")
     DOCKER_VOLUME_RESOURCES_PATH_CONTAINER: str = os.getenv("DOCKER_VOLUME_RESOURCES_PATH_CONTAINER", "/resouce")
     DOCKER_VOLUME_TMP_PATH_HOST: str = os.getenv("DOCKER_VOLUME_TMP_PATH_HOST", "/home/hongthaing")

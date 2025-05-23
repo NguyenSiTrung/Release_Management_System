@@ -68,6 +68,10 @@ class EvaluationJobBase(BaseModel):
     sub_mode_type: Optional[str] = None
     custom_params: Optional[str] = None
     evaluation_model_type: Optional[str] = None
+    # Base model fields for when evaluation_model_type = "both"
+    base_model_bleu_score: Optional[float] = None
+    base_model_comet_score: Optional[float] = None
+    base_model_output_file_path: Optional[str] = None
 
 class EvaluationJobInDBBase(EvaluationJobBase):
     job_id: int
@@ -78,6 +82,7 @@ class EvaluationJobInDBBase(EvaluationJobBase):
     class Config:
         from_attributes = True
         orm_mode = True
+        extra = "allow"  # Allow extra fields like base_model_* fields
 
 class EvaluationJob(EvaluationJobInDBBase):
     pass
@@ -85,4 +90,27 @@ class EvaluationJob(EvaluationJobInDBBase):
 class EvaluationJobWithDetails(EvaluationJob):
     model_version_name: str
     testset_name: str
-    requested_by_username: Optional[str] = None 
+    requested_by_username: Optional[str] = None
+
+# Pagination response
+class PaginatedEvaluationJobs(BaseModel):
+    items: List[EvaluationJob]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+# Admin deletion schemas
+class BulkDeleteRequest(BaseModel):
+    job_ids: List[int]
+
+class DateRangeDeleteRequest(BaseModel):
+    start_date: datetime
+    end_date: datetime
+    version_id: Optional[int] = None  # Optional filter by version
+    status: Optional[str] = None  # Optional filter by status
+
+class DeleteResponse(BaseModel):
+    deleted_count: int
+    message: str
+    failed_deletions: Optional[List[dict]] = None  # List of jobs that failed to delete 

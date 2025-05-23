@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import yaml
 import time
+import random
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime
 import logging
@@ -16,8 +17,163 @@ from app.db.database import SessionLocal, get_db
 from app.schemas.evaluation import EvaluationStatus
 from app.crud import crud_evaluation, crud_model_version, crud_training_result, crud_testset, crud_language_pair
 from app.db.models import ModelVersion, Testset, LanguagePair, TrainingResult, EvaluationJob
+from app.schemas.training_result import TrainingResultCreate
 
 logger = logging.getLogger(__name__)
+
+def fake_create_translation_output(source_file: str, output_path: str, num_lines: Optional[int] = None) -> None:
+    """
+    Create a fake translation output file for testing purposes
+    """
+    logger.info(f"[FAKE MODE] Creating fake translation output: {output_path}")
+    
+    # Read the source file to get the number of lines
+    if num_lines is None:
+        with open(source_file, 'r', encoding='utf-8') as f:
+            source_lines = f.readlines()
+        num_lines = len(source_lines)
+    
+    # Create fake output content - Thai text repeated for each line
+    fake_translation ="""This is a sample English text for testing.
+This is a sample English text for testing 2.
+This is a sample English text for testing 3.
+This is a sample English text for testing 4.
+This is a sample English text for testing 5.
+This is a sample English text for testing 6.
+This is a sample English text for testing 7.
+This is a sample English text for testing 8.
+This is a sample English text for testing 9.
+This is a sample English text for testing 10.
+This is a sample English text for testing 11.
+This is a sample English text for testing 12.
+This is a sample English text for testing 13.
+This is a sample English text for testing 14.
+This is a sample English text for testing 15.
+This is a sample English text for testing 16.
+This is a sample English text for testing 17.
+This is a sample English text for testing 18.
+This is a sample English text for testing 19.
+This is a sample English text for testing 20.
+This is a sample English text for testing 21.
+This is a sample English text for testing 22.
+This is a sample English text for testing 23.
+This is a sample English text for testing 24.
+"""
+    # Create the output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    # Write fake content to output file
+    with open(output_path, 'w', encoding='utf-8') as f:
+        for i in range(num_lines):
+            f.write(f"{fake_translation}\n")
+    
+    logger.info(f"[FAKE MODE] Created fake output file with {num_lines} lines: {output_path}")
+
+def fake_calculate_metrics(output_file: str, reference_file: str, source_file: str) -> Tuple[float, float]:
+    """
+    Calculate fake BLEU and COMET scores for testing purposes
+    """
+    logger.info(f"[FAKE MODE] Calculating fake metrics")
+    
+    # Generate reasonable fake scores
+    fake_bleu = round(random.uniform(15.0, 35.0), 2)  # BLEU typically 15-35 for MT
+    fake_comet = round(random.uniform(0.6, 0.85), 4)  # COMET typically 0.6-0.85
+    
+    logger.info(f"[FAKE MODE] Generated fake BLEU: {fake_bleu}, COMET: {fake_comet}")
+    return fake_bleu, fake_comet
+
+def fake_perform_model_evaluation(
+    source_file: str,
+    target_file: str,
+    model_file: str,
+    hparams_file: str,
+    output_path: str,
+    source_lang: str,
+    target_lang: str,
+    mode_type: Optional[str] = None,
+    sub_mode_type: Optional[str] = None,
+    custom_params: Optional[str] = None,
+    job_id: Optional[int] = None
+) -> Dict[str, Any]:
+    """
+    Fake model evaluation for testing purposes
+    """
+    logger.info(f"[FAKE MODE] Performing fake model evaluation for job_id: {job_id}")
+    logger.info(f"[FAKE MODE] Source: {source_file}, Target: {target_file}")
+    logger.info(f"[FAKE MODE] Model: {model_file}, HParams: {hparams_file}")
+    logger.info(f"[FAKE MODE] Output: {output_path}")
+    logger.info(f"[FAKE MODE] Mode: {mode_type}, SubMode: {sub_mode_type}")
+    
+    # Simulate processing time
+    time.sleep(2)
+    
+    # Create fake translation output
+    fake_create_translation_output(source_file, output_path)
+    
+    # Calculate fake metrics
+    fake_bleu, fake_comet = fake_calculate_metrics(output_path, target_file, source_file)
+    
+    logger.info(f"[FAKE MODE] Fake evaluation completed for job {job_id}")
+    return {
+        "bleu_score": fake_bleu,
+        "comet_score": fake_comet,
+        "output_path": output_path
+    }
+
+def fake_translate_text(
+    source_text: str,
+    model_file_path: str,
+    hparams_file_path: str,
+    mode_type: Optional[str] = None,
+    sub_mode_type: Optional[str] = None,
+    custom_params: Optional[str] = None
+) -> str:
+    """
+    Fake text translation for testing purposes
+    """
+    logger.info(f"[FAKE MODE] Performing fake text translation")
+    logger.info(f"[FAKE MODE] Source text length: {len(source_text)} chars")    
+    logger.info(f"[FAKE MODE] Model: {model_file_path}")
+    logger.info(f"[FAKE MODE] Mode: {mode_type}, SubMode: {sub_mode_type}")
+    
+    # Simulate processing time
+    time.sleep(1)
+    
+    # Return fake translation
+        # Create fake output content - Thai text repeated for each line
+    fake_translation ="""This is a sample English text for testing.
+This is a sample English text for testing 2.
+This is a sample English text for testing 3.
+This is a sample English text for testing 4.
+This is a sample English text for testing 5.
+This is a sample English text for testing 6.
+This is a sample English text for testing 7.
+This is a sample English text for testing 8.
+This is a sample English text for testing 9.
+This is a sample English text for testing 10.
+This is a sample English text for testing 11.
+This is a sample English text for testing 12.
+This is a sample English text for testing 13.
+This is a sample English text for testing 14.
+This is a sample English text for testing 15.
+This is a sample English text for testing 16.
+This is a sample English text for testing 17.
+This is a sample English text for testing 18.
+This is a sample English text for testing 19.
+This is a sample English text for testing 20.
+This is a sample English text for testing 21.
+This is a sample English text for testing 22.
+This is a sample English text for testing 23.
+This is a sample English text for testing 24.
+"""
+    
+    # If source text has multiple lines, repeat fake translation for each line
+    source_lines = source_text.strip().split('\n')
+    if len(source_lines) > 1:
+        fake_translation = '\n'.join([fake_translation] * len(source_lines))
+    
+    logger.info(f"[FAKE MODE] Fake translation completed")
+    return fake_translation
 
 def construct_evaluation_docker_command(base_command_args: List[str], selected_mode: Optional[str] = None, sub_mode_type: Optional[str] = None, custom_params: Optional[str] = None) -> List[str]:
     """
@@ -256,7 +412,7 @@ def run_evaluation(job_id: int) -> None:
             status=EvaluationStatus.PREPARING_SETUP,
             processing_started_at=datetime.now()
         )
-
+        
         # Get model version and testset
         logger.info(f"Job {job_id}: Getting model version {job.version_id} and testset {job.testset_id}")
         model_version = crud_model_version.get(db=db, version_id=job.version_id)
@@ -266,7 +422,7 @@ def run_evaluation(job_id: int) -> None:
             logger.error(f"Job {job_id}: {error_msg}")
             update_job_failed(db=db, job=job, error=error_msg)
             return
-
+        
         # Get language pair for source/target language codes
         logger.info(f"Job {job_id}: Getting language pair {model_version.lang_pair_id}")
         language_pair = crud_language_pair.get_language_pair(db=db, lang_pair_id=model_version.lang_pair_id)
@@ -275,7 +431,7 @@ def run_evaluation(job_id: int) -> None:
             logger.error(f"Job {job_id}: {error_msg}")
             update_job_failed(db=db, job=job, error=error_msg)
             return
-
+        
         # Verify paths
         evaluation_model_type = job.evaluation_model_type or "finetuned"
         logger.info(f"Job {job_id}: Evaluation model type: {evaluation_model_type}")
@@ -412,8 +568,8 @@ def run_evaluation(job_id: int) -> None:
             try:
                 logger.info(f"Job {job_id}: Preparing base model evaluation")
                 job = crud_evaluation.update_status(
-                    db=db,
-                    job_id=job_id,
+                db=db,
+                job_id=job_id,
                     status=EvaluationStatus.PREPARING_ENGINE
                 )
                 
@@ -443,8 +599,8 @@ def run_evaluation(job_id: int) -> None:
                     # Update job with base model results
                     logger.info(f"Job {job_id}: Updating job with base model results")
                     job = crud_evaluation.update_status(
-                        db=db,
-                        job_id=job_id,
+                db=db,
+                job_id=job_id,
                         status=EvaluationStatus.COMPLETED,
                         completed_at=datetime.now(),
                         update_data={
@@ -467,9 +623,9 @@ def run_evaluation(job_id: int) -> None:
                             job_id=job.job_id
                         )
                         job = crud_evaluation.update_status(
-                            db=db,
-                            job_id=job_id,
-                            status=job.status,
+                db=db,
+                job_id=job_id,
+                            status=EvaluationStatus(job.status),
                             update_data={"details_added_successfully": True}
                         )
                 else:
@@ -484,18 +640,17 @@ def run_evaluation(job_id: int) -> None:
                 error_msg = f"Error in base model evaluation: {str(e)}"
                 logger.error(f"Job {job_id}: {error_msg}")
                 update_job_failed(db=db, job=job, error=error_msg)
-                return
-        
+                
         if evaluation_model_type == "finetuned" or evaluation_model_type == "both":
             # Evaluate with finetuned model
             try:
                 logger.info(f"Job {job_id}: Preparing finetuned model evaluation")
                 job = crud_evaluation.update_status(
-                    db=db,
-                    job_id=job_id,
-                    status=EvaluationStatus.PREPARING_ENGINE
-                )
-                
+            db=db,
+            job_id=job_id,
+            status=EvaluationStatus.PREPARING_ENGINE
+        )
+        
                 finetuned_output_path = os.path.join(temp_dir, "finetuned_output.txt")
                 logger.info(f"Job {job_id}: Finetuned model output will be saved to: {finetuned_output_path}")
                 logger.info(f"Job {job_id}: Finetuned model details - Source: {testset.source_file_path_on_server}, Target: {testset.target_file_path_on_server}")
@@ -527,7 +682,7 @@ def run_evaluation(job_id: int) -> None:
                 
                 if base_model_result:
                     logger.info(f"Job {job_id}: Including base model results in update")
-                    update_data["base_model_result"] = base_model_result
+                    update_data["base_model_result"] = json.dumps(base_model_result)
                 
                 logger.info(f"Job {job_id}: Updating job with finetuned model results")
                 job = crud_evaluation.update_status(
@@ -552,14 +707,29 @@ def run_evaluation(job_id: int) -> None:
                     
                     # If we have base model result, update that too
                     if base_model_result and training_result:
-                        training_result.base_model_bleu = base_model_result["bleu_score"]
-                        training_result.base_model_comet = base_model_result["comet_score"]
-                        db.commit()
+                        # Handle both dict and object returns from add_results_to_training_details
+                        if hasattr(training_result, 'base_model_bleu'):
+                            # Direct object assignment (typical case)
+                            training_result.base_model_bleu = base_model_result["bleu_score"]
+                            training_result.base_model_comet = base_model_result["comet_score"]
+                            db.commit()
+                        else:
+                            # Handle the case where training_result is a dictionary or other type
+                            # Find the training result by version_id and testset_id and update it
+                            existing = crud_training_result.get_by_version_and_testset(
+                                db=db,
+                                version_id=job.version_id,
+                                testset_id=job.testset_id
+                            )
+                            if existing:
+                                existing.base_model_bleu = base_model_result["bleu_score"]
+                                existing.base_model_comet = base_model_result["comet_score"]
+                                db.commit()
                     
                     job = crud_evaluation.update_status(
                         db=db,
                         job_id=job_id,
-                        status=job.status,
+                        status=EvaluationStatus(job.status),
                         update_data={"details_added_successfully": True}
                     )
                     
@@ -567,8 +737,7 @@ def run_evaluation(job_id: int) -> None:
                 error_msg = f"Error in finetuned model evaluation: {str(e)}"
                 logger.error(f"Job {job_id}: {error_msg}")
                 update_job_failed(db=db, job=job, error=error_msg)
-                return
-
+                
     except Exception as e:
         print(f"Unexpected error in evaluation job {job_id}: {str(e)}")
         try:
@@ -592,6 +761,18 @@ def translate_text(
     """
     Translate text directly using a model without saving results to database
     """
+    # Check if fake evaluation mode is enabled
+    if settings.FAKE_EVALUATION_MODE:
+        logger.info(f"[FAKE MODE ENABLED] Using fake translation")
+        return fake_translate_text(
+            source_text=source_text,
+            model_file_path=model_file_path,
+            hparams_file_path=hparams_file_path,
+            mode_type=mode_type,
+            sub_mode_type=sub_mode_type,
+            custom_params=custom_params
+        )
+
     # Create a temporary file with the source text
     with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as source_file:
         source_file.write(source_text)
@@ -638,8 +819,8 @@ def translate_text(
         process = subprocess.run(
             docker_cmd,
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE, 
             timeout=60  # Short timeout for direct translation
         )
         
@@ -679,6 +860,23 @@ def perform_model_evaluation(
     Perform model evaluation by translating source file and calculating metrics.
     Uses Docker to run the translation engine. Retries up to 3 times if Docker fails to start.
     """
+    # Check if fake evaluation mode is enabled
+    if settings.FAKE_EVALUATION_MODE:
+        logger.info(f"[FAKE MODE ENABLED] Using fake evaluation for job_id: {job_id}")
+        return fake_perform_model_evaluation(
+            source_file=source_file,
+            target_file=target_file,
+            model_file=model_file,
+            hparams_file=hparams_file,
+            output_path=output_path,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            mode_type=mode_type,
+            sub_mode_type=sub_mode_type,
+            custom_params=custom_params,
+            job_id=job_id
+        )
+
     logger.info(f"Starting model evaluation for job_id: {job_id if job_id else 'N/A'}")
     logger.info(f"Source: {source_file}, Target (Ref): {target_file}, Model: {model_file}, HParams: {hparams_file}")
     logger.info(f"Output will be saved to: {output_path}")
@@ -927,6 +1125,9 @@ def update_job_failed(db: Session, job: EvaluationJob, error: str) -> None:
     """
     Update job status to FAILED with error message
     """
+    # Import EvaluationStatus from schemas to ensure we're using enum
+    from app.schemas.evaluation import EvaluationStatus
+    
     crud_evaluation.update_status(
         db=db,
         job_id=job.job_id,
@@ -947,6 +1148,19 @@ def add_results_to_training_details(
     """
     Add evaluation results to training details
     """
+    # Check if fake evaluation mode is enabled
+    if settings.FAKE_EVALUATION_MODE:
+        logger.info(f"[FAKE MODE ENABLED] Using fake add_results_to_training_details")
+        return fake_add_results_to_training_details(
+                db=db,
+            version_id=version_id,
+            testset_id=testset_id,
+            is_base=is_base,
+            bleu_score=bleu_score,
+            comet_score=comet_score,
+            job_id=job_id
+        )
+    
     # Try to find existing training result for this version and testset
     existing = crud_training_result.get_by_version_and_testset(
         db=db,
@@ -981,4 +1195,58 @@ def add_results_to_training_details(
             "testset_id": testset_id,
             **fields
         }
+        return crud_training_result.create(db=db, obj_in=create_data)
+
+def fake_add_results_to_training_details(
+    db: Session,
+    version_id: int,
+    testset_id: int,
+    is_base: bool,
+    bleu_score: float,
+    comet_score: float,
+    job_id: int
+) -> Optional[Any]:
+    """
+    Fake version of add_results_to_training_details for testing
+    """
+    logger.info(f"[FAKE MODE] Adding fake results to training details")
+    logger.info(f"[FAKE MODE] Version: {version_id}, Testset: {testset_id}")
+    logger.info(f"[FAKE MODE] Is Base: {is_base}, BLEU: {bleu_score}, COMET: {comet_score}")
+    
+    # Try to find existing training result for this version and testset
+    existing = crud_training_result.get_by_version_and_testset(
+        db=db,
+        version_id=version_id,
+        testset_id=testset_id
+    )
+    
+    # Choose which fields to update based on whether it's base or finetuned model
+    if is_base:
+        fields = {
+            "base_model_bleu": bleu_score,
+            "base_model_comet": comet_score,
+            "training_details_notes": f"[FAKE MODE] Updated with evaluation job {job_id} on {datetime.now()}"
+        }
+    else:
+        fields = {
+            "finetuned_model_bleu": bleu_score,
+            "finetuned_model_comet": comet_score,
+            "training_details_notes": f"[FAKE MODE] Updated with evaluation job {job_id} on {datetime.now()}"
+        }
+    
+    # Create or update the training result
+    if existing:
+        logger.info(f"[FAKE MODE] Updating existing training result ID: {existing.result_id}")
+        return crud_training_result.update(
+            db=db,
+            db_obj=existing,
+            obj_in=fields
+        )
+    else:
+        logger.info(f"[FAKE MODE] Creating new training result")
+        create_data = TrainingResultCreate(
+            version_id=version_id,
+            testset_id=testset_id,
+            **fields
+        )
         return crud_training_result.create(db=db, obj_in=create_data) 
