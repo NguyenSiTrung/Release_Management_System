@@ -1,0 +1,15 @@
+[Unit]
+Description=NMT Release Management Frontend
+After=network.target
+
+[Service]
+User=trung
+WorkingDirectory=/home/trung/Documents/ML/Translation/frontend
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+Environment="HOST=0.0.0.0"
+Environment="REACT_APP_API_URL=http://localhost:8000/api/v1"
+
+[Install]
+WantedBy=multi-user.target 

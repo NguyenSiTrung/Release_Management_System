@@ -1,0 +1,154 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+💎 Cursor Rule for Project: NMT Release Management System
+Bản quy tắc này được tùy chỉnh dựa trên "Global Rules" và áp dụng các chi tiết cụ thể từ tài liệu thiết kế hệ thống nmt_management_system.txt.
+
+🔄 Nhận thức & Bối cảnh Dự án (Project Awareness & Context)
+Nguồn tham khảo chính: Tài liệu thiết kế hệ thống nmt_management_system.txt là nguồn chân lý (source of truth) cho kiến trúc, luồng nghiệp vụ và các thực thể. Tôi sẽ luôn tham chiếu tài liệu này. Bất cứ khi nào có thay đổi update, hay thêm các tính năng mới, sửa đổi tôi sẽ cập nhật lại tài liệu thiết kế hệ thống này nmt_management_system.txt
+
+Tuân thủ Kiến trúc:
+
+Backend: Mọi logic phải tuân thủ cấu trúc đã định sẵn:
+
+Endpoints: app/api/v1/endpoints/
+
+Logic CRUD: app/crud/
+
+Schemas Pydantic: app/schemas/
+
+Models SQLAlchemy: app/db/models.py
+
+Logic nghiệp vụ cốt lõi: app/core/ (ví dụ: evaluation.py)
+
+Frontend: Tuân thủ thiết kế Argon Dashboard Style sử dụng Material-UI (MUI). Các component mới phải nhất quán về giao diện (màu sắc, gradient, shadow) với các màn hình hiện có.
+
+Thư viện & Công nghệ:
+
+Backend: Chỉ sử dụng các thư viện đã có trong pyproject.toml (hoặc requirements.txt) như FastAPI, SQLAlchemy 2.0, Pydantic 2.0, Alembic.
+
+Frontend: Sử dụng React 18, MUI 5, Axios, Formik, và Recharts như đã mô tả.
+
+Trước khi đề xuất thư viện mới, tôi sẽ kiểm tra và xin phép.
+
+🧱 Cấu trúc Code & Tính Module (Code Structure & Modularity)
+Giới hạn File: Không file Python nào trong app/ vượt quá 500 dòng.
+
+Ví dụ: Nếu app/api/v1/endpoints/model_versions.py trở nên quá phức tạp, logic xử lý file upload hoặc các logic chuẩn bị cho đánh giá sẽ được tách ra thành các hàm helper trong app/core/ hoặc app/crud/.
+
+Phân tách Trách nhiệm:
+
+Endpoints (/endpoints/*.py): Chỉ chịu trách nhiệm nhận request, gọi CRUD/logic nghiệp vụ, và trả về response. Không chứa logic nghiệp vụ phức tạp.
+
+CRUD (/crud/*.py): Chỉ chứa các thao tác trực tiếp với CSDL (create, read, update, delete) thông qua SQLAlchemy.
+
+Schemas (/schemas/*.py): Chỉ định nghĩa cấu trúc dữ liệu cho API request/response bằng Pydantic.
+
+⚙️ Cấu hình & Bảo mật (Configuration & Security)
+Biến môi trường: Tất cả các cấu hình (DATABASE_URL, SECRET_KEY, đường dẫn tới storage/) phải được quản lý qua biến môi trường và được đọc bởi app/core/config.py.
+
+Validation bắt buộc: Mọi dữ liệu đầu vào từ client qua API phải được validate bằng một schema Pydantic tương ứng trong thư mục app/schemas/. Nghiêm cấm sử dụng dữ liệu thô từ request trong các hàm CRUD.
+
+Phân quyền: Khi tạo endpoint mới, luôn phải thêm dependency kiểm tra quyền (deps.get_current_active_user) và logic kiểm tra vai trò (role) nếu cần, dựa trên các đối tượng người dùng: Admin, Release Manager, Member.
+
+🧪 Kiểm thử & Độ tin cậy (Testing & Reliability)
+Cấu trúc Tests: Mọi file test phải được đặt trong thư mục /tests và có cấu trúc tương ứng. Ví dụ: logic cho app/api/v1/endpoints/testsets.py sẽ được test trong tests/api/v1/test_testsets.py.
+
+Kịch bản Test tối thiểu: Đối với một tính năng mới, ví dụ "Tạo Testset mới":
+
+Happy Path: Test tạo thành công một testset với file source/target hợp lệ.
+
+Edge Case: Test tạo testset nhưng không đính kèm file, hoặc file sai định dạng.
+
+Failure Case: Test tạo testset cho một LanguagePair không tồn tại.
+
+Integration Tests: Ưu tiên viết integration test cho các luồng quan trọng, đặc biệt là:
+
+Luồng Đánh giá Model (Evaluation Flow): Từ lúc người dùng nhấn nút "Start Evaluation" trên UI -> gọi API POST /api/v1/evaluations -> kích hoạt BackgroundTask -> ghi kết quả vào CSDL -> cập nhật trạng thái trên UI.
+
+🐞 Gỡ lỗi & Ghi nhận (Debugging & Logging)
+Sử dụng Logger có sẵn: Luôn sử dụng logger đã được cấu hình sẵn trong app/main.py (sử dụng TimedRotatingFileHandler). Không tạo logger mới.
+
+Chủ động Ghi Log:
+
+Luôn thêm log khi phát triển hoặc cập nhật các tính năng, đặc biệt là tại các điểm quan trọng trong logic hoặc những nơi tiềm ẩn nguy cơ lỗi (ví dụ: trước và sau khi gọi một service bên ngoài, khi bắt đầu và kết thúc một tác vụ nền, khi xử lý file).
+
+Sử dụng cấp độ log phù hợp (INFO cho các bước chính, DEBUG cho thông tin chi tiết gỡ lỗi).
+
+Cấp độ Log cụ thể:
+
+ERROR: Ghi nhận lỗi khi BackgroundTask đánh giá model thất bại, lỗi kết nối CSDL, hoặc các exception không lường trước.
+
+INFO: Ghi nhận các sự kiện chính: User admin@example.com logged in, Evaluation job {job_id} started for model {model_version_id}, Testset {testset_id} created successfully.
+
+DEBUG: Ghi nhận các thông tin chi tiết cho việc gỡ lỗi: Payload for evaluation job: {...}, BLEU score calculated: {score}.
+
+Kiểm tra Log khi có lỗi: Nếu một lỗi xảy ra hoặc một hành vi không mong muốn được báo cáo, luôn kiểm tra file log của ứng dụng (cả backend và frontend nếu có) để thu thập thêm thông tin chi tiết và bối cảnh về lỗi trước khi tiến hành gỡ lỗi.
+
+Cập nhật CHANGELOG.md: Khi một bug quan trọng được sửa, ví dụ "Lỗi không xóa file tạm sau khi đánh giá xong", tôi sẽ ghi lại:
+
+Vấn đề: Các file tạm trong /temp/evaluation_{id} không được dọn dẹp.
+
+Nguyên nhân: Thiếu lệnh os.remove trong khối finally của BackgroundTask (được phát hiện qua log lỗi ghi lại exception và trạng thái file).
+
+Giải pháp: Thêm logic dọn dẹp tài nguyên vào khối finally để đảm bảo nó luôn được thực thi.
+
+📎 Phong cách & Quy ước (Style & Conventions)
+Định dạng: Code Python luôn được format bằng black. Luôn sử dụng type hints.
+
+Docstrings (Google Style): Mọi hàm và phương thức quan trọng phải có docstring.
+
+Ví dụ cho crud_model_version.py:
+
+from app.db import models
+from app.schemas import ModelVersionCreate
+from sqlalchemy.orm import Session
+
+def create_model_version(db: Session, *, obj_in: ModelVersionCreate, owner_id: int) -> models.ModelVersion:
+    """Creates a new model version in the database.
+
+    This function handles the creation of the database record for a new model version.
+    File storage logic is handled separately.
+
+    Args:
+        db (Session): The database session.
+        obj_in (ModelVersionCreate): The Pydantic schema containing the data for the new model version.
+        owner_id (int): The ID of the user creating this version.
+
+    Returns:
+        models.ModelVersion: The newly created SQLAlchemy ModelVersion object.
+    """
+    # function logic here...
+
+Custom Exceptions: Sử dụng exception tùy chỉnh cho các lỗi nghiệp vụ.
+
+Ví dụ: ModelNotFoundException, TestsetInUseError, EvaluationPrerequisitesFailedError.
+
+📚 Tài liệu & Giải thích (Documentation & Explainability)
+README.md: Khi thêm một biến môi trường mới (ví dụ DOCKER_NMT_IMAGE), tôi sẽ cập nhật phần "Cài đặt & Cấu hình" trong README.md.
+
+Code Comments: Đối với các logic phức tạp, tôi sẽ thêm chú thích.
+
+Ví dụ trong app/core/evaluation.py:
+
+# Reason: The model files are copied to a temporary directory instead of
+# being used directly from storage. This prevents race conditions if multiple
+# evaluations are requested for the same model version simultaneously.
+temp_model_path = shutil.copytree(source_model_path, temp_eval_dir)
+
+🧠 Quy tắc Hành vi của AI (AI Behavior Rules)
+Xác nhận trước khi hành động: Trước khi sửa đổi một luồng phức tạp như Luồng Đánh giá Model, tôi sẽ hỏi để xác nhận các yêu cầu, ví dụ: "Việc đánh giá có cần hỗ trợ chế độ 'bulk' không? Output metrics từ Docker engine có định dạng JSON hay plain text?".
+
+Không giả định đường dẫn: Tôi sẽ luôn xác minh sự tồn tại của các đường dẫn file được định nghĩa trong tài liệu thiết kế (ví dụ: storage/models/{version_id}/) trước khi viết code thao tác trên chúng.
+
+Làm việc lặp lại: Thay vì viết toàn bộ endpoint model_versions.py cùng lúc, tôi sẽ thực hiện theo từng bước:
+
+Tạo schema Pydantic trong schemas/model_version.py.
+
+Tạo các hàm CRUD trong crud/crud_model_version.py.
+
+Viết unit test cho các hàm CRUD đó.
+
+Cuối cùng, tạo endpoint API trong api/v1/endpoints/model_versions.py và kết nối chúng lại.

@@ -1,0 +1,911 @@
+﻿﻿Tài Liệu Thiết Kế Chi Tiết Toàn Diện: Hệ Thống Quản Lý Release Model NMT
+Phiên bản: 7.1 (Production-Ready với Enhanced SQE Results Critical Issues Logic)
+Ngày cập nhật: 06/06/2025
+Cập nhật cuối: Enhanced Critical Issues Logic và Professional UI/UX Improvements
+Trạng thái: PRODUCTION READY - ALL MODULES COMPLETE với Enhanced Analytics
+
+Mục Lục
+1. Giới Thiệu
+1.1. Mục Đích Hệ Thống  
+1.2. Đối Tượng Người Dùng
+1.3. Phạm Vi Chức Năng
+2. Kiến Trúc Hệ Thống Tổng Thể
+2.1. Sơ Đồ Kiến Trúc (Production Architecture)
+2.2. Các Thành Phần Chính
+3. Thiết Kế Frontend (Professional UI/UX)
+3.1. Công Nghệ Đã Triển Khai
+3.2. Nguyên Tắc Thiết Kế UI/UX (Argon Dashboard Style)
+3.3. Cấu Trúc Layout Chung (Enhanced Responsive Design)
+3.4. Thư Viện Component UI và Styling (Production-Ready)
+3.5. Quản Lý State Frontend (Hoàn Thiện với Context API)
+3.6. Luồng Người Dùng và Mô Tả Chi Tiết Các Màn Hình
+3.6.1. Xác Thực (Đăng Nhập, Đăng Ký) - ✅ Professional UI
+3.6.2. Dashboard Chính - ✅ Hoàn Thiện với Professional UI
+3.6.3. Quản Lý Cặp Ngôn Ngữ - ✅ Argon Dashboard Style
+3.6.4. Quản Lý Phiên Bản Model - ✅ Enhanced với Pagination UI
+3.6.5. Quản Lý Kết Quả Training - ✅ Professional Interface
+3.6.6. Quản Lý Tập Testset - ✅ Enhanced với Professional UI và File Upload
+3.6.7. Trực Quan Hóa Dữ Liệu - ✅ Enhanced với Interactive Charts
+3.6.8. Quản Lý Release Notes - ✅ Rich Text Editor
+3.6.9. Luồng Đánh Giá Model - ✅ Professional Evaluation Workflow
+3.6.10. Quản Lý Người Dùng (Admin) - ✅ Argon Dashboard Style
+3.6.11. Evaluation & Translation - ✅ Professional Interface
+3.6.12. Quản Lý Kết Quả SQE Testing - ✅ **COMPLETE** Professional SQE Results Management
+4. Thiết Kế Backend (Production-Ready API)
+4.1. Công Nghệ Đã Triển Khai (Production-Ready)
+4.2. Cấu Trúc Dự Án Đã Triển Khai (Production-Ready)
+4.3. Định Nghĩa API Chi Tiết (Comprehensive Endpoints)
+4.3.1. API Xác Thực (/api/v1/auth) - ✅ JWT Implementation
+4.3.2. API Quản Lý Cặp Ngôn Ngữ (/api/v1/language-pairs) - ✅ Complete CRUD
+4.3.3. API Quản Lý Phiên Bản Model (/api/v1/model-versions) - ✅ Enhanced với File Upload
+4.3.4. API Quản Lý Kết Quả Training (/api/v1/training-results) - ✅ Complete Implementation
+4.3.5. API Quản Lý Tập Testset (/api/v1/testsets) - ✅ Enhanced với File Upload
+4.3.6. API Trực Quan Hóa Dữ Liệu (/api/v1/visualizations) - ✅ Interactive Charts
+4.3.7. API Quản Lý Release Notes - ✅ Rich Text Support
+4.3.8. API Luồng Đánh Giá Model (/api/v1/evaluations) - ✅ Background Processing
+4.3.9. API Quản Lý Người Dùng (/api/v1/users) - ✅ Admin Interface
+4.3.10. API Quản Lý Kết Quả SQE (/api/v1/sqe-results) - ✅ **COMPLETE** SQE Testing Results
+4.3.11. API Hệ Thống (/api/v1/system) - ✅ Monitoring và Health Checks
+4.4. Logic Nghiệp Vụ Chính
+4.4.1. Xử Lý Upload File Model và HParams - ✅ Production-Ready
+4.4.2. Logic Luồng Đánh Giá Model (Background Task) - ✅ Enhanced
+4.4.3. Phân Quyền và Kiểm Tra Quyền Truy Cập - ✅ Role-based Access
+4.4.4. Xóa Dữ Liệu Liên Quan (Cascading Logic) - ✅ Comprehensive
+4.4.5. Professional Logging và Error Handling - ✅ Production Grade
+5. Thiết Kế Cơ Sở Dữ Liệu (Production-Ready)
+5.1. Hệ Quản Trị Cơ Sở Dữ Liệu (SQLite Production-Ready)
+5.2. Sơ Đồ Quan Hệ Thực Thể (ERD)
+5.3. Định Nghĩa Chi Tiết Các Bảng (SQLAlchemy Models)
+5.4. Quan Hệ Giữa Các Bảng và Ràng Buộc
+5.5. Indexing và Tối Ưu Hóa Truy Vấn - ✅ Optimized
+5.6. Storage Management - ✅ Enhanced Organization
+6. Luồng Đánh Giá Model Chi Tiết (Enhanced Evaluation Flow)
+6.1. Kích Hoạt Từ Giao Diện Người Dùng - ✅ Professional UI
+6.2. Xử Lý Backend (API và Background Task) - ✅ Enhanced
+6.3. Cập Nhật Trạng Thái và Hiển Thị Kết Quả - ✅ Real-time
+6.4. Cấu Hình Liên Quan - ✅ Production Configuration
+7. Các Yêu Cầu Phi Chức Năng (Production-Ready)
+7.1. Bảo Mật - ✅ Enhanced Security
+7.2. Hiệu Năng - ✅ Optimized Performance
+7.3. Khả Năng Mở Rộng - ✅ Scalable Architecture
+7.4. Khả Năng Bảo Trì - ✅ Professional Maintenance
+7.5. Khả Năng Sử Dụng (UX/UI) - ✅ Professional Argon Style
+7.6. Logging và Giám Sát - ✅ Comprehensive Monitoring
+8. Triển Khai và Vận Hành (Production-Ready)
+8.1. Môi Trường Production - ✅ Complete Setup
+8.2. Quản Lý Cấu Hình - ✅ Environment Variables
+8.3. Service Management - ✅ Systemd Services
+8.4. Monitoring và Logging - ✅ Professional Infrastructure
+9. Production Status (Current Implementation)
+9.1. Giai Đoạn 1: MVP (✅ Hoàn Thành)
+9.2. Giai Đoạn 2: Upload & Evaluation Flow (✅ Hoàn Thành)
+9.3. Giai Đoạn 3: Advanced Features (✅ Hoàn Thành)
+9.4. Giai Đoạn 4: Pagination & Performance (✅ Hoàn Thành)
+9.5. Giai Đoạn 5: UI/UX Enhancement (✅ Hoàn Thành)
+9.6. Giai Đoạn 6: Production Deployment (✅ Hoàn Thành)
+9.7. Giai Đoạn 7: SQE Results Module (✅ **COMPLETE** - 22/01/2025, Enhanced 06/06/2025)
+10. Thuật Ngữ và Định Nghĩa
+
+1. Giới Thiệu
+
+1.1. Mục Đích Hệ Thống
+Hệ thống web Quản lý Release Model NMT (NMT Release Management System) là một nền tảng production-ready được thiết kế để cung cấp giải pháp toàn diện cho team NMT trong việc:
+   * Quản lý, lưu trữ và theo dõi các phiên bản model NMT với professional interface
+   * Ghi nhận và so sánh hiệu suất (BLEU, COMET) qua các bản phát hành trên nhiều cặp ngôn ngữ
+   * Tạo và quản lý release notes với rich text editor
+   * Tự động hóa quy trình đánh giá model với background processing
+   * Quản lý testsets với file upload capabilities
+   * Trực quan hóa dữ liệu với interactive charts
+   * Professional logging và monitoring
+
+1.2. Đối Tượng Người Dùng
+   * Thành viên team NMT (Member): Thực hiện training, cập nhật kết quả, theo dõi hiệu suất
+   * Người quản lý release (Release Manager): Quản lý vòng đời model versions, phê duyệt workflows
+   * Quản trị viên (Admin): Quản lý người dùng, cấu hình hệ thống, monitoring
+
+1.3. Phạm Vi Chức Năng (Production-Ready)
+   * ✅ Xác thực và quản lý người dùng với role-based access control
+   * ✅ CRUD operations cho tất cả core entities với pagination support
+   * ✅ File upload cho models và testsets với proper validation
+   * ✅ Automated evaluation workflow với Docker integration
+   * ✅ Rich text release notes management
+   * ✅ Interactive data visualizations với Recharts
+   * ✅ Professional UI/UX với Argon Dashboard styling
+   * ✅ Comprehensive logging và error handling
+   * ✅ Production deployment với systemd services
+
+2. Kiến Trúc Hệ Thống Tổng Thể
+
+2.1. Sơ Đồ Kiến Trúc (Production Architecture)
+Hệ thống production-ready bao gồm:
+
+**Frontend Layer:**
+   * React 18.2.0 SPA với Material-UI (Argon Dashboard style)
+   * TypeScript 4.9.5 cho type safety
+   * Responsive design cho mọi devices
+   * Professional error boundaries
+
+**Backend Layer:**
+   * FastAPI ≥0.95.1 với async/await support
+   * Professional logging với rotation
+   * Background task processing
+   * File upload/download handling
+   * Comprehensive error handling
+
+**Data Layer:**
+   * SQLite với proper indexing
+   * Automated migrations với Alembic 1.12.1
+   * Data validation với Pydantic ≥2.0.0
+
+**Infrastructure Layer:**
+   * Systemd services cho production deployment
+   * Nginx reverse proxy support
+   * Docker integration cho evaluation engine
+   * File storage management
+
+2.2. Các Thành Phần Chính (Enhanced)
+   * **Frontend**: React 18.2.0 SPA với professional UI components
+   * **Backend**: FastAPI với comprehensive API endpoints
+   * **Database**: SQLite với migration support
+   * **File Storage**: Organized storage structure cho models và testsets
+   * **Background Processing**: FastAPI BackgroundTasks cho evaluation workflows
+   * **Logging**: Professional logging với daily rotation
+   * **Deployment**: Production-ready với systemd services
+
+3. Thiết Kế Frontend (Professional UI/UX)
+
+3.1. Công Nghệ Đã Triển Khai (Production-Ready)
+   * **Framework**: React 18.2.0 với TypeScript 4.9.5
+   * **UI Library**: Material-UI (MUI) 5.17.1 với Emotion styling
+   * **State Management**: React Context API với optimized patterns
+   * **HTTP Client**: Axios 1.9.0 với interceptors
+   * **Routing**: React Router DOM 6.20.1
+   * **Form Handling**: Formik 2.4.6 với Yup 1.6.1 validation
+   * **Charts**: Recharts 2.15.3 cho interactive visualizations
+   * **Diff Display**: diff 8.0.2 cho advanced comparison
+   * **Authentication**: JWT handling với jwt-decode 4.0.0
+   * **Testing**: React Testing Library với Jest
+
+3.2. Nguyên Tắc Thiết Kế UI/UX (Argon Dashboard Style)
+   * **Professional Appearance**: Modern gradient designs và shadows
+   * **Consistency**: Uniform color scheme, typography, và spacing
+   * **Responsive Design**: Mobile-first approach với breakpoints
+   * **Interactive Feedback**: Hover effects, loading states, transitions
+   * **Error Handling**: Comprehensive error boundaries và user feedback
+   * **Accessibility**: ARIA labels và keyboard navigation support
+
+3.3. Cấu Trúc Layout Chung (Enhanced Responsive Design)
+   * **Header (AppBar)**:
+     * Logo và application title
+     * Toggle button cho sidebar (responsive)
+     * User profile dropdown với avatar và role information
+   * **Sidebar Navigation** (Responsive):
+     * Collapsible design với 260px width
+     * Gradient styling với active state indicators
+     * Icon-based navigation với smooth transitions
+     * Professional menu items với proper spacing
+   * **Main Content Area**:
+     * Proper padding và spacing (adjusted for sidebar width)
+     * Responsive layout adapting to sidebar state
+     * Professional card-based content organization
+   * **Responsive Behavior**:
+     * Mobile: Overlay sidebar
+     * Desktop: Fixed sidebar với toggle capability
+
+3.4. Thư Viện Component UI và Styling (Production-Ready)
+   * **Material-UI Components**: Full suite với customization
+   * **Custom Styling**: Emotion-based CSS-in-JS
+   * **Professional Theme**: Argon Dashboard color palette
+   * **Interactive Elements**: Buttons, forms, modals với consistent styling
+   * **Data Display**: Tables với pagination, cards, lists
+   * **Feedback Components**: Alerts, snackbars, loading indicators
+   * **Navigation**: Breadcrumbs, tabs, pagination components
+
+3.5. Quản Lý State Frontend (Optimized)
+   * **Global State**: AuthContext cho authentication
+   * **Local State**: Component-level với useState/useReducer
+   * **API State**: Direct axios calls với proper error handling
+   * **Pagination State**: Server-side pagination với UI components
+   * **Form State**: Formik integration với validation
+
+3.6. Luồng Người Dùng và Mô Tả Chi Tiết Các Màn Hình (Enhanced)
+
+3.6.1. Xác Thực (Enhanced AuthPage)
+   * **Modern Design**: Gradient background với glass-morphism effects
+   * **Responsive Form**: Professional form design với validation
+   * **User Feedback**: Clear error messages và loading states
+   * **Security**: Proper JWT handling với token expiration
+
+3.6.2. Dashboard Chính (Professional Overview)
+   * **Statistics Cards**: Gradient-styled cards với icons
+   * **Data Visualization**: Interactive charts với Recharts
+   * **Recent Activity**: Professional table design
+   * **Storage Overview**: Real-time storage information
+   * **System Status**: Live system health monitoring
+
+3.6.3. Quản Lý Cặp Ngôn Ngữ (Argon Style)
+   * **Professional Table**: Enhanced với pagination và search
+   * **Action Buttons**: Gradient styling với icons
+   * **Modal Forms**: Clean design với validation
+   * **Responsive Design**: Mobile-optimized layout
+
+3.6.4. Quản Lý Phiên Bản Model (Enhanced)
+   * **Pagination Support**: Server-side pagination với Material-UI components
+   * **File Upload**: Drag-and-drop interface với progress indicators
+   * **Detail Views**: Comprehensive model version information
+   * **Professional Tabs**: Training results, release notes, evaluation history
+
+3.6.5. Quản Lý Kết Quả Training (Integrated)
+   * **Professional Forms**: Metric input với validation
+   * **Data Display**: Enhanced table design với sorting
+   * **Interactive Elements**: Inline editing capabilities
+
+3.6.6. Quản Lý Tập Testset (Enhanced với File Upload)
+   * **File Upload**: Support cho source/target file uploads
+   * **Storage Management**: Proper file organization
+   * **Pagination**: Server-side pagination với filtering
+   * **Professional UI**: Argon-styled components
+
+3.6.7. Trực Quan Hóa Dữ Liệu (Interactive Charts)
+   * **Recharts Integration**: Professional chart components
+   * **Interactive Elements**: Tooltips, zoom, filtering
+   * **Responsive Charts**: Mobile-optimized visualizations
+   * **Data Filtering**: Advanced filter controls
+
+3.6.8. Quản Lý Release Notes (Rich Text Editor)
+   * **Professional Editor**: Rich text editing capabilities
+   * **Version Control**: Track changes và history
+   * **Preview Mode**: Real-time preview của content
+
+3.6.9. Luồng Đánh Giá Model (Enhanced Workflow)
+   * **Professional Interface**: Step-by-step evaluation setup
+   * **Real-time Status**: Live updates của evaluation progress
+   * **Result Display**: Comprehensive results presentation
+   * **Error Handling**: Clear error messages và recovery options
+
+3.6.10. Quản Lý Người Dùng (Admin Panel)
+   * **Professional Design**: Argon-styled admin interface
+   * **Role Management**: Enhanced role assignment interface
+   * **User Operations**: Create, edit, delete với confirmations
+
+3.6.11. Evaluation & Translation (Professional Interface)
+   * **Tabbed Interface**: Clean separation của evaluation và translation
+   * **Advanced Options**: Support cho multiple model types
+   * **Real-time Feedback**: Progress indicators và status updates
+
+3.6.12. Quản Lý Kết Quả SQE Testing (✅ **COMPLETE** Professional SQE Results Management)
+
+**Tính năng SQE Results Module** đã được triển khai hoàn chỉnh với các thành phần sau:
+
+#### **SQE Results Table** (Professional Data Management):
+   * **Comprehensive Filtering**: Filter theo language pair, score range (min/max), critical issues
+   * **Server-side Pagination**: 5/10/25/50 rows per page với responsive UI
+   * **Color-coded Scoring System**: 
+     - 🟢 Green (≥8.0): Excellent quality
+     - 🟡 Orange (≥6.0): Good quality  
+     - 🔴 Red (<6.0): Needs improvement
+   * **Change Indicators**: Trend icons với percentage changes
+   * **Critical Issue Warnings**: Visual indicators cho test cases có điểm 1
+   * **Professional Actions**: Create, Edit, Delete với proper confirmations
+
+#### **SQE Analytics Dashboard** (Interactive Data Visualization):
+   * **Language Pair Trends**: Line charts hiển thị performance trends qua thời gian
+   * **Cross-Language Comparison**: Bar charts so sánh performance giữa các language pairs
+   * **Score Distribution**: Pie charts hiển thị phân bố scores theo ranges
+   * **Overall Statistics Cards**: 
+     - Average Score across all results
+     - Total Results count
+     - Critical Cases count (scores = 1)
+     - Average Test Cases per result
+   * **Interactive Charts**: Tooltips, responsive design, professional styling
+
+#### **SQE Result Form** (User-friendly Data Entry):
+   * **Cascading Dropdowns**: Language Pair → Model Version selection
+   * **Score Slider Interface**: Visual score input với real-time color feedback
+   * **Validation System**: Form validation với clear error messages
+   * **Score Descriptions**: Dynamic descriptions dựa trên score ranges
+   * **Critical Issue Toggle**: Checkbox để mark critical test cases
+   * **Change Tracking**: Percentage change input với validation
+
+#### **Technical Implementation**:
+   * **TypeScript Integration**: Full type safety với comprehensive interfaces
+   * **Material-UI Components**: Professional styling với Argon Dashboard theme
+   * **Recharts Integration**: Interactive charts với responsive design
+   * **Error Handling**: Comprehensive error boundaries và user feedback
+   * **API Integration**: RESTful endpoints với proper authentication
+   * **Database Optimization**: Proper indexing và query optimization
+
+4. Thiết Kế Backend (Production-Ready API)
+
+4.1. Công Nghệ Đã Triển Khai (Production-Ready)
+   * **Framework**: FastAPI ≥0.95.1 với async support
+   * **ORM**: SQLAlchemy ≥2.0.9 với Alembic 1.12.1 migrations
+   * **Validation**: Pydantic ≥2.0.0 với enhanced schemas
+   * **Authentication**: JWT với python-jose ≥3.3.0
+   * **Security**: passlib ≥1.7.4 với bcrypt hashing
+   * **File Handling**: python-multipart ≥0.0.6
+   * **Background Tasks**: FastAPI BackgroundTasks
+   * **Configuration**: python-dotenv ≥1.0.0
+   * **Metrics**: sacrebleu ≥2.3.1, pandas ≥2.0.0
+   * **Logging**: Professional logging với TimedRotatingFileHandler
+   * **Automation**: python-crontab ≥2.7.0
+
+4.2. Cấu Trúc Dự Án Đã Triển Khai (Production Structure)
+
+```
+/backend
+├── app/
+│   ├── main.py                      # FastAPI app với professional logging
+│   │   ├── endpoints/
+│   │   │   ├── auth.py            # JWT authentication
+│   │   │   ├── language_pairs.py  # Language pair management
+│   │   │   ├── model_versions.py  # Enhanced với pagination và file upload
+│   │   │   ├── training_results.py # Training results CRUD
+│   │   │   ├── testsets.py        # Enhanced với file upload và pagination
+│   │   │   ├── visualizations.py  # Chart data endpoints
+│   │   │   ├── release_notes.py   # Release notes management
+│   │   │   ├── users.py           # User management (admin)
+│   │   │   ├── evaluations.py    # Enhanced evaluation với bulk operations
+│   │   │   └── system.py          # System information API
+│   │   └── api.py                 # Main API router
+│   ├── core/
+│   │   ├── config.py                # Enhanced configuration
+│   │   ├── security.py              # JWT và password handling
+│   │   ├── deps.py                  # Dependency injection
+│   │   └── evaluation.py           # Evaluation engine logic
+│   ├── crud/                        # Enhanced CRUD operations
+│   │   ├── crud_user.py
+│   │   ├── crud_language_pair.py
+│   │   ├── crud_model_version.py    # Enhanced với file operations
+│   │   ├── crud_testset.py          # Enhanced với file upload
+│   │   ├── crud_training_result.py
+│   │   ├── crud_release_note.py
+│   │   └── crud_evaluation.py       # Enhanced evaluation CRUD
+│   ├── db/
+│   │   ├── database.py              # Database configuration
+│   │   └── models.py                # Enhanced SQLAlchemy models
+│   └── schemas/                     # Enhanced Pydantic schemas
+│       ├── user.py
+│       ├── language_pair.py
+│       ├── model_version.py         # Enhanced với pagination
+│       ├── testset.py              # Enhanced với pagination và file upload
+│       ├── training_result.py
+│       ├── release_note.py
+│       ├── token.py
+│       └── evaluation.py           # Enhanced evaluation schemas
+├── storage/                         # Enhanced file storage
+│   ├── models/                      # Model version files
+│   │   └── {version_id}/
+│   │       ├── model files
+│   │       └── hparams files
+│   ├── testsets/                    # Testset files
+│   │   └── {testset_id}/
+│   │       ├── source files
+│   │       └── target files
+│   └── temp/                        # Temporary evaluation files
+│       └── evaluation_temp/
+│           └── evaluation_{id}/
+├── logs/                            # Professional logging
+│   └── app_*.log                    # Daily rotated logs
+├── nmt_release_management.db        # SQLite database
+└── requirements.txt                 # Production dependencies
+```
+
+4.3. Định Nghĩa API Chi Tiết (Comprehensive Endpoints)
+
+4.3.1. API Xác Thực (/api/v1/auth) - ✅ JWT Implementation
+   * POST /login - JWT token authentication
+   * POST /register - User registration với role assignment
+   * GET /me - Current user information
+   * POST /refresh - Token refresh mechanism
+
+4.3.2. API Quản Lý Cặp Ngôn Ngữ (/api/v1/language-pairs) - ✅ Complete CRUD
+   * GET / - List với pagination support
+   * POST / - Create new language pair
+   * GET /{id} - Retrieve specific pair
+   * PUT /{id} - Update language pair
+   * DELETE /{id} - Delete với cascading logic
+
+4.3.3. API Quản Lý Phiên Bản Model (/api/v1/model-versions) - ✅ Enhanced
+   * GET / - List với pagination và filtering
+   * POST / - Create với file upload support
+   * GET /{id} - Detailed model version information
+   * PUT /{id} - Update model version metadata
+   * DELETE /{id} - Delete với file cleanup
+   * POST /{id}/upload-files - File upload endpoint
+   * GET /{id}/download-file - File download endpoint
+
+4.3.4. API Quản Lý Kết Quả Training (/api/v1/training-results) - ✅ Complete
+   * GET / - List với pagination
+   * POST / - Create training result
+   * GET /{id} - Retrieve specific result
+   * PUT /{id} - Update training result
+   * DELETE /{id} - Delete training result
+
+4.3.5. API Quản Lý Tập Testset (/api/v1/testsets) - ✅ Enhanced
+   * GET / - List với pagination và filtering
+   * POST / - Create với file upload
+   * GET /{id} - Retrieve testset details
+   * PUT /{id} - Update testset metadata
+   * DELETE /{id} - Delete với file cleanup
+   * POST /{id}/upload-files - Source/target file upload
+   * GET /{id}/download-file - File download endpoint
+
+4.3.6. API Trực Quan Hóa Dữ Liệu (/api/v1/visualizations) - ✅ Interactive Charts
+   * GET /bleu-scores - BLEU score trends
+   * GET /model-comparison - Model performance comparison
+   * GET /language-pair-stats - Language pair statistics
+   * GET /evaluation-timeline - Evaluation history timeline
+
+4.3.7. API Quản Lý Release Notes - ✅ Rich Text Support
+   * GET /model-versions/{id}/release-notes - List release notes
+   * POST /model-versions/{id}/release-notes - Create release note
+   * PUT /release-notes/{id} - Update release note
+   * DELETE /release-notes/{id} - Delete release note
+
+4.3.8. API Luồng Đánh Giá Model (/api/v1/evaluations) - ✅ Background Processing
+   * GET / - List evaluations với pagination
+   * POST / - Start evaluation job
+   * GET /{id} - Evaluation details và progress
+   * DELETE /{id} - Cancel evaluation
+   * POST /bulk - Bulk evaluation operations
+   * GET /{id}/results - Evaluation results
+
+4.3.9. API Quản Lý Người Dùng (/api/v1/users) - ✅ Admin Interface
+   * GET / - List users (admin only)
+   * POST / - Create user (admin only)
+   * GET /{id} - User details
+   * PUT /{id} - Update user information
+   * DELETE /{id} - Delete user (admin only)
+
+4.3.10. API Quản Lý Kết Quả SQE (/api/v1/sqe-results) - ✅ **COMPLETE** SQE Testing Results
+
+**Comprehensive SQE Results API** với các endpoints sau:
+
+#### **Core CRUD Operations**:
+   * `GET /` - List SQE results với advanced filtering và pagination
+     - **Filters**: language_pair_id, score_min, score_max, has_one_point_case
+     - **Pagination**: page, size với metadata response
+     - **Response**: PaginatedSQEResults với comprehensive data
+   
+   * `POST /` - Create new SQE result với validation
+     - **Input Validation**: Score ranges, test case counts, percentages
+     - **Business Logic**: Automatic relationship validation
+     - **Response**: Created SQEResult với all relationships populated
+   
+   * `GET /{id}` - Retrieve specific SQE result với detailed information
+   * `GET /version/{version_id}` - Get SQE result by model version (One-to-One relationship)
+   * `PUT /{id}` - Update SQE result với comprehensive validation
+   * `DELETE /{id}` - Delete SQE result (admin only) với proper authorization
+
+#### **Analytics Endpoints** (Advanced Reporting):
+   * `GET /analytics/overall` - Overall SQE analytics và statistics
+     - **Metrics**: Average score, total results, critical cases count
+     - **Calculations**: Automated aggregation từ database
+     - **Performance**: Optimized queries với proper indexing
+   
+   * `GET /analytics/comparison` - Cross language pair comparison
+     - **Data**: Latest scores, test cases, trends per language pair
+     - **Analysis**: Critical issues identification, performance comparison
+     - **Visualization Ready**: Formatted data cho frontend charts
+   
+   * `GET /analytics/language-pair/{language_pair_id}` - Language pair trends
+     - **Timeline Data**: Score trends qua các model versions
+     - **Change Tracking**: Performance improvements/degradations
+     - **Historical Analysis**: Complete version history với scores
+
+#### **Database Schema Enhancement**:
+
+```sql
+-- SQE Results Table (Production-Ready)
+CREATE TABLE sqe_results (
+    sqe_result_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    version_id INTEGER NOT NULL,
+    average_score REAL NOT NULL CHECK (average_score >= 0 AND average_score <= 10),
+    total_test_cases INTEGER NOT NULL CHECK (total_test_cases > 0),
+    test_cases_changed BOOLEAN DEFAULT FALSE,
+    change_percentage REAL DEFAULT 0.0,
+    has_one_point_case BOOLEAN DEFAULT FALSE,
+    test_date DATE,
+    notes TEXT,
+    tested_by_user_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign Key Constraints
+    FOREIGN KEY (version_id) REFERENCES model_versions(version_id) ON DELETE CASCADE,
+    FOREIGN KEY (tested_by_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    
+    -- Unique Constraint (One SQE result per model version)
+    UNIQUE(version_id)
+);
+
+-- Performance Indexes
+CREATE INDEX idx_sqe_results_version_id ON sqe_results(version_id);
+CREATE INDEX idx_sqe_results_score ON sqe_results(average_score);
+CREATE INDEX idx_sqe_results_test_date ON sqe_results(test_date);
+CREATE INDEX idx_sqe_results_critical ON sqe_results(has_one_point_case);
+```
+
+#### **Enhanced Relationships**:
+   * **ModelVersion ↔ SQEResult**: One-to-One relationship
+   * **User ↔ SQEResult**: One-to-Many (tested_by relationship)
+   * **LanguagePair → SQEResult**: Through ModelVersion relationship
+   * **Cascading Logic**: Proper cleanup khi delete model versions
+
+4.3.11. API Hệ Thống (/api/v1/system) - ✅ Monitoring
+   * GET /health - System health check
+   * GET /storage-info - Storage usage statistics
+   * GET /system-stats - System performance metrics
+
+5. Thiết Kế Cơ Sở Dữ Liệu (Production-Ready)
+
+5.1. Hệ Quản Trị Cơ Sở Dữ Liệu (SQLite Production-Ready)
+   * SQLite database với proper configuration cho production
+   * WAL mode cho better concurrent access
+   * Proper indexing cho performance optimization
+   * Automated backup strategies
+
+5.2. Sơ Đồ Quan Hệ Thực Thể (ERD)
+   * User -> ModelVersion (One-to-Many, owner relationship)
+   * LanguagePair -> ModelVersion (One-to-Many)
+   * LanguagePair -> Testset (One-to-Many)
+   * ModelVersion -> TrainingResult (One-to-Many)
+   * ModelVersion -> ReleaseNote (One-to-Many)
+   * ModelVersion -> EvaluationJob (One-to-Many)
+   * ModelVersion -> SQEResult (One-to-One)
+   * User -> SQEResult (One-to-Many, tested_by relationship)
+   * Testset -> EvaluationJob (Many-to-Many through evaluation configuration)
+
+5.3. Định Nghĩa Chi Tiết Các Bảng (SQLAlchemy Models)
+
+5.3.1. Bảng User
+   * id: Primary key
+   * username: Unique username
+   * email: Unique email address
+   * hashed_password: Bcrypt hashed password
+   * full_name: Display name
+   * role: Enum (admin, release_manager, member)
+   * is_active: Boolean status
+   * created_at, updated_at: Timestamps
+
+5.3.2. Bảng LanguagePair
+   * id: Primary key
+   * source_language: Source language code
+   * target_language: Target language code
+   * name: Display name
+   * description: Optional description
+   * created_at, updated_at: Timestamps
+
+5.3.3. Bảng ModelVersion - ✅ Enhanced
+   * id: Primary key
+   * name: Model version name
+   * version: Version string
+   * language_pair_id: Foreign key to LanguagePair
+   * owner_id: Foreign key to User
+   * model_file_path: Path to model files
+   * hparams_file_path: Path to hyperparameters file
+   * status: Enum (draft, ready, archived)
+   * description: Optional description
+   * created_at, updated_at: Timestamps
+
+5.3.4. Bảng Testset - ✅ Enhanced
+   * id: Primary key
+   * name: Testset name
+   * language_pair_id: Foreign key to LanguagePair
+   * source_file_path: Path to source file
+   * target_file_path: Path to target file
+   * owner_id: Foreign key to User
+   * description: Optional description
+   * size: Number of sentences
+   * created_at, updated_at: Timestamps
+
+5.3.5. Bảng TrainingResult
+   * id: Primary key
+   * model_version_id: Foreign key to ModelVersion
+   * bleu_score: BLEU score value
+   * comet_score: COMET score (optional)
+   * training_duration: Duration in hours
+   * notes: Optional training notes
+   * created_at, updated_at: Timestamps
+
+5.3.6. Bảng ReleaseNote
+   * id: Primary key
+   * model_version_id: Foreign key to ModelVersion
+   * title: Release note title
+   * content: Rich text content
+   * version: Release version
+   * author_id: Foreign key to User
+   * created_at, updated_at: Timestamps
+
+5.3.7. Bảng EvaluationJob - ✅ Enhanced
+   * id: Primary key
+   * model_version_id: Foreign key to ModelVersion
+   * testset_id: Foreign key to Testset
+   * job_id: Unique job identifier
+   * status: Enum (pending, running, completed, failed)
+   * mode: Enum (base, finetuned, both)
+   * bleu_score: Evaluation BLEU score
+   * comet_score: Evaluation COMET score
+   * error_message: Error details (if failed)
+   * started_at, completed_at: Job timestamps
+   * created_at, updated_at: Record timestamps
+
+5.3.8. Bảng SQEResult - ✅ **COMPLETE** Software Quality Engineering Results
+
+   * **sqe_result_id**: Primary key (Auto-increment)
+   * **version_id**: Foreign key to ModelVersion (UNIQUE - One-to-One relationship)
+   * **average_score**: REAL (0.0-10.0) - Overall quality score
+   * **total_test_cases**: INTEGER - Number of test cases evaluated
+   * **test_cases_changed**: BOOLEAN - Whether test cases changed from previous version
+   * **change_percentage**: REAL - Percentage change from previous evaluation
+   * **has_one_point_case**: BOOLEAN - Critical issue indicator (any test case scored 1)
+   * **test_date**: DATE - When the SQE testing was performed
+   * **notes**: TEXT - Additional testing notes và observations
+   * **tested_by_user_id**: Foreign key to User (who performed the testing)
+   * **created_at, updated_at**: Timestamps với automatic updates
+
+   **Performance Indexes**:
+   * `idx_sqe_results_version_id` - Fast lookup by model version
+   * `idx_sqe_results_score` - Score-based filtering và sorting
+   * `idx_sqe_results_test_date` - Date-based analytics queries
+   * `idx_sqe_results_critical` - Critical issue identification
+
+5.4. Quan Hệ Giữa Các Bảng và Ràng Buộc
+   * CASCADE DELETE: User deletion cascades to owned models
+   * RESTRICT DELETE: Language pairs cannot be deleted if in use
+   * SET NULL: User deletion sets author_id to NULL in release notes
+
+5.5. Indexing và Tối Ưu Hóa Truy Vấn - ✅ Optimized
+   * Indexes on foreign keys cho performance
+   * Composite indexes cho common query patterns
+   * Query optimization với SQLAlchemy eager loading
+
+5.6. Storage Management - ✅ Enhanced Organization
+   * Structured file storage với proper permissions
+   * Automated cleanup cho temporary files
+   * Storage monitoring và usage tracking
+
+6. Luồng Đánh Giá Model Chi Tiết (Enhanced Evaluation Flow)
+
+6.1. Kích Hoạt Từ Giao Diện Người Dùng - ✅ Professional UI
+   * Professional evaluation form với validation
+   * Model và testset selection interface
+   * Advanced options cho evaluation modes
+   * Real-time validation và feedback
+
+6.2. Xử Lý Backend (API và Background Task) - ✅ Enhanced
+   * API endpoint validation và authorization
+   * Background task creation với unique job ID
+   * File preparation và Docker container setup
+   * NMT engine execution với monitoring
+   * Results calculation và storage
+   * Status updates và error handling
+
+6.3. Cập Nhật Trạng Thái và Hiển Thị Kết Quả - ✅ Real-time
+   * Real-time status updates trong UI
+   * Professional results presentation
+   * Error handling và recovery options
+   * Results comparison và visualization
+
+6.4. Cấu Hình Liên Quan - ✅ Production Configuration
+   * Environment variables cho all settings
+   * Docker configuration cho NMT engine
+   * File path management
+   * Error handling và logging configuration
+
+7. Các Yêu Cầu Phi Chức Năng (Production-Ready)
+
+7.1. Bảo Mật - ✅ Enhanced Security
+   * JWT authentication với role-based access control
+   * Password hashing với bcrypt
+   * Input validation và sanitization
+   * File upload security với type checking
+   * API rate limiting (configurable)
+
+7.2. Hiệu Năng - ✅ Optimized Performance
+   * Server-side pagination cho large datasets
+   * Database query optimization
+   * Async processing cho file operations
+   * Response caching cho static data
+   * API response times < 200ms
+
+7.3. Khả Năng Mở Rộng - ✅ Scalable Architecture
+   * Modular backend architecture
+   * Configurable database options
+   * Horizontal scaling support
+   * Load balancing ready
+
+7.4. Khả Năng Bảo Trì - ✅ Professional Maintenance
+   * Comprehensive logging với rotation
+   * Database migration support
+   * Automated cleanup scripts
+   * Health monitoring endpoints
+
+7.5. Khả Năng Sử Dụng (UX/UI) - ✅ Professional Argon Style
+   * Responsive design cho all devices
+   * Intuitive navigation và workflows
+   * Professional error messages
+   * Loading states và progress indicators
+
+7.6. Logging và Giám Sát - ✅ Comprehensive Monitoring
+   * Professional logging với daily rotation
+   * Error tracking và alerting
+   * Performance monitoring
+   * System health checks
+
+8. Triển Khai và Vận Hành (Production-Ready)
+
+8.1. Môi Trường Production - ✅ Complete Setup
+   * Linux server environment (Ubuntu/CentOS)
+   * Python 3.10+ với virtual environment
+   * Node.js 18+ cho frontend build
+   * Nginx reverse proxy configuration
+   * Systemd service management
+
+8.2. Quản Lý Cấu Hình - ✅ Environment Variables
+   * DATABASE_URL: Database connection string
+   * SECRET_KEY: JWT signing key
+   * STORAGE_BASE_PATH: File storage location
+   * DOCKER_NMT_IMAGE: NMT evaluation Docker image
+   * FAKE_EVALUATION_MODE: Development mode toggle
+
+8.3. Service Management - ✅ Systemd Services
+   * nmt-backend.service: Backend API service
+   * nmt-frontend.service: Frontend static files
+   * nmt-frontend-prod.service: Production frontend
+   * Automated service management scripts
+
+8.4. Monitoring và Logging - ✅ Professional Infrastructure
+   * Daily log rotation với 30-day retention
+   * Automated cleanup scripts
+   * Health check endpoints
+   * Storage monitoring và alerts
+
+9. Production Status (Current Implementation)
+
+9.1. Giai Đoạn 1: MVP (✅ Hoàn Thành)
+   * Basic authentication và user management
+   * Core CRUD operations cho all entities
+   * Foundation UI components
+
+9.2. Giai Đoạn 2: Upload & Evaluation Flow (✅ Hoàn Thành)
+   * File upload cho models và testsets
+   * Evaluation workflow với Docker integration
+   * Background task processing
+
+9.3. Giai Đoạn 3: Advanced Features (✅ Hoàn Thành)
+   * Rich text release notes
+   * Data visualization với Recharts
+   * Advanced comparison features
+
+9.4. Giai Đoạn 4: Pagination & Performance (✅ Hoàn Thành)
+   * Server-side pagination implementation
+   * Database optimization
+   * API performance improvements
+
+9.5. Giai Đoạn 5: UI/UX Enhancement (✅ Hoàn Thành)
+   * Argon Dashboard-style interface
+   * Responsive design implementation
+   * Professional form handling
+   * Interactive visualizations
+
+9.6. Giai Đoạn 6: Production Deployment (✅ Hoàn Thành)
+   * Systemd service configuration
+   * Professional logging infrastructure
+   * Production build automation
+   * Environment configuration
+
+9.7. Giai Đoạn 7: SQE Results Module (✅ **COMPLETE** - 22/01/2025, Enhanced 06/06/2025)
+
+**Software Quality Engineering Results Management** - Hoàn thiện module quản lý kết quả kiểm thử chất lượng phần mềm với các cải tiến mới:
+
+#### **Enhanced Critical Issues Logic (06/06/2025)**:
+
+**🔄 Thay đổi Logic Đếm Critical Issues:**
+- **Logic Cũ**: Đếm tất cả SQE results có `has_one_point_case = True`  
+- **Logic Mới**: Đếm theo Language Pair với logic thông minh:
+  * Mỗi Language Pair chỉ đóng góp **tối đa 1** Critical Issue
+  * Dựa trên SQE result **mới nhất** theo `test_date` (DESC) cho mỗi Language Pair
+  * Nếu Language Pair có SQE result mới nhất không có test case 1 điểm → không đóng góp Critical Issue
+  * Nếu Language Pair có SQE result mới nhất có test case 1 điểm → đóng góp 1 Critical Issue
+
+**🎨 Enhanced Critical Issues Card UI:**
+- **Status Messages**: Thay thế phần trăm bằng meaningful messages:
+  * `critical_cases = 0`: "All systems clear" (Green)
+  * `critical_cases = 1`: "Requires attention" (Red)  
+  * `critical_cases = 2-3`: "Multiple issues found" (Red)
+  * `critical_cases > 3`: "Critical review needed" (Red)
+- **Professional Icon Design**: Removed shadow với `noIconShadow` prop cho clean appearance
+- **Enhanced Tooltips**: Explanatory tooltips cho user hiểu logic mới
+- **Alert Messages**: Dynamic alert messages based on critical count
+
+**🔧 Backend Implementation Details:**
+```python
+# New method in crud_sqe_results.py
+def _count_critical_language_pairs(self, db: Session) -> int:
+    """Count language pairs with critical issues in their latest SQE result"""
+    language_pairs = db.query(LanguagePair).all()
+    critical_count = 0
+    
+    for lang_pair in language_pairs:
+        if self._language_pair_has_critical_issues(db, lang_pair.lang_pair_id):
+            critical_count += 1
+    
+    return critical_count
+
+def _language_pair_has_critical_issues(self, db: Session, language_pair_id: int) -> bool:
+    """Check if a language pair has critical issues in its latest SQE result"""
+    latest_result = db.query(SQEResult).join(ModelVersion).filter(
+        ModelVersion.lang_pair_id == language_pair_id
+    ).order_by(
+        SQEResult.test_date.desc().nulls_last(),
+        SQEResult.created_at.desc()
+    ).first()
+    
+    return latest_result.has_one_point_case if latest_result else False
+```
+
+#### **Language Pair Filtering Enhancement (06/06/2025)**:
+
+**📊 Score Distribution Charts với Language Pair Filtering:**
+- **All Language Pairs Option**: Default view showing combined data across all pairs
+- **Individual Language Pair Filtering**: Filter by specific language pair
+- **Visual Indicators**: Color-coded indicators (Green for "All", Blue for specific pairs)
+- **Dynamic Titles**: Chart titles update based on selected filter
+- **Result Count Display**: Shows filtered result counts với appropriate messages
+- **Empty State Handling**: Professional empty states cho filtered views
+
+**🎛️ Advanced Filter Interface:**
+- **Dropdown Selector**: Professional Material-UI dropdown với language pair options
+- **Visual Feedback**: Colored dots indicating filter status
+- **Auto-refresh**: Automatic data refresh when selection changes
+- **Responsive Design**: Mobile-optimized filter controls
+
+#### **Technical Achievements (06/06/2025)**:
+- **Database Performance**: Optimized queries với proper Language Pair relationship handling
+- **API Enhancement**: Updated analytics endpoints để support language pair filtering
+- **Frontend Integration**: Seamless integration với existing SQE analytics dashboard
+- **Error Handling**: Robust error handling cho edge cases và data validation
+- **Professional Styling**: Consistent Argon Dashboard styling throughout
+
+## **Backend Technical Fixes (06/06/2025)**
+
+### **Critical Issues Logic Implementation**:
+   * **Database Query Optimization**: Enhanced `get_overall_stats()` method
+   * **Relationship Handling**: Proper Language Pair → ModelVersion → SQEResult navigation
+   * **Performance Enhancement**: Efficient counting logic avoiding complex aggregations
+   * **Error Handling**: Comprehensive validation và edge case handling
+
+### **Frontend UI/UX Enhancements**:
+   * **StatCard Enhancement**: Added `noIconShadow` prop cho professional appearance
+   * **Tooltip Integration**: Educational tooltips explaining Critical Issues logic
+   * **Alert System**: Dynamic alert messages based on critical count và context
+   * **Color Coding**: Intelligent color schemes reflecting system status
+
+### **Language Pair Analytics**:
+   * **Filtering Logic**: Advanced filtering capabilities cho Score Distribution
+   * **Data Visualization**: Enhanced charts với language pair context
+   * **User Experience**: Intuitive filter controls với visual feedback
+   * **Performance**: Optimized data loading và refresh mechanisms
+
+## Kết Luận
+
+Hệ thống NMT Release Management System đã đạt trạng thái **PRODUCTION READY COMPLETE với Enhanced Analytics** (06/06/2025):
+
+- ✅ **Enhanced Critical Issues Logic** với intelligent Language Pair-based counting
+- ✅ **Professional UI/UX improvements** với refined visual design
+- ✅ **Advanced Analytics Features** including language pair filtering
+- ✅ **Complete feature set** bao gồm 7 modules hoàn chỉnh với latest enhancements
+- ✅ **Robust backend** với optimized queries và enhanced logic
+- ✅ **Production deployment** infrastructure đã được verified
+- ✅ **Performance optimization** và scalability enhancements
+- ✅ **Security implementation** và comprehensive monitoring
+- ✅ **Documentation** và maintenance procedures updated
+
+**Các cải tiến mới nhất (06/06/2025)**:
+- Enhanced Critical Issues counting logic theo Language Pair
+- Professional UI refinements với removed icon shadows
+- Language pair filtering cho analytics dashboard
+- Improved user experience với meaningful status messages
+- Optimized database queries và performance enhancements

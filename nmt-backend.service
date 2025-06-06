@@ -1,0 +1,14 @@
+[Unit]
+Description=NMT Release Management Backend API
+After=network.target
+
+[Service]
+User=trung
+WorkingDirectory=/home/trung/Documents/ML/Translation/backend
+ExecStart=/home/trung/Documents/ML/Translation/backend/venv/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+Environment="PYTHONPATH=/home/trung/Documents/ML/Translation/backend"
+
+[Install]
+WantedBy=multi-user.target 
