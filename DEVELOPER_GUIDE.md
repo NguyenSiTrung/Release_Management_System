@@ -1,171 +1,475 @@
-# Developer Guide
+# Developer Guide - NMT Release Management System v7.1
 
-This guide provides information for developers working on the NMT Release Management System, including architecture details and recent changes.
+## 🎯 **Production-Ready Development Guide**
 
-## Architecture Overview
+This comprehensive guide provides technical details for developers working on the NMT Release Management System, covering architecture, development practices, and production deployment.
 
-### Backend (FastAPI)
+**System Status**: ✅ Production Ready - All 7 Modules Complete  
+**Latest Version**: 7.1 - Enhanced SQE Results with Intelligent Analytics
 
-The backend follows a layered architecture:
+## 🏗 **System Architecture Overview**
 
-1. **API Layer** (`app/api/v1/endpoints`):
-   - REST API endpoints organized by resource
-   - Route handlers for HTTP requests
-   - Authentication and permission checks
+### **Production-Ready Architecture**
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   Database      │
+│   React 18.2.0  │◄──►│   FastAPI       │◄──►│   SQLite        │
+│   TypeScript    │    │   Python 3.10+  │    │   + Indexing    │
+│   Material-UI   │    │   SQLAlchemy    │    │   + Migrations  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │              ┌─────────────────┐              │
+         └─────────────►│   File Storage  │◄─────────────┘
+                        │   Organized     │
+                        │   Structure     │
+                        └─────────────────┘
+```
 
-2. **CRUD Layer** (`app/crud`):
-   - Database operations for each model
-   - Implements Create, Read, Update, Delete operations
-   - Handles transaction management
+### **Backend Architecture (FastAPI)**
 
-3. **Schema Layer** (`app/schemas`):
-   - Pydantic schemas for request/response validation
-   - Defines data structures and validation rules
-   - Handles data conversion and serialization
+#### **Layered Architecture Pattern**
+```
+📁 app/
+├── 🌐 api/v1/endpoints/     # REST API Layer
+│   ├── auth.py              # JWT Authentication
+│   ├── language_pairs.py    # Language Pair Management
+│   ├── model_versions.py    # Model Lifecycle Management
+│   ├── testsets.py          # Test Dataset Management
+│   ├── training_results.py  # Performance Metrics
+│   ├── evaluations.py       # Evaluation Workflow
+│   ├── sqe_results.py       # Quality Engineering ✨ Enhanced
+│   ├── users.py             # User Management
+│   └── system.py            # Health & Monitoring
+├── 🔧 core/                 # Core Services Layer
+│   ├── config.py            # Configuration Management
+│   ├── security.py          # JWT & Password Handling
+│   ├── deps.py              # Dependency Injection
+│   └── evaluation.py        # Background Task Logic
+├── 🗄️ crud/                # Data Access Layer
+│   ├── crud_user.py         # User Operations
+│   ├── crud_language_pair.py
+│   ├── crud_model_version.py # Enhanced with File Operations
+│   ├── crud_testset.py      # Enhanced with Upload
+│   ├── crud_training_result.py
+│   ├── crud_evaluation.py   # Background Task Management
+│   └── crud_sqe_results.py  # ✨ SQE Quality Management
+├── 🗃️ db/                  # Database Layer
+│   ├── database.py          # Connection & Session Management
+│   └── models.py            # SQLAlchemy ORM Models
+└── 📊 schemas/              # Validation Layer
+    ├── user.py              # Pydantic Schemas
+    ├── language_pair.py
+    ├── model_version.py     # Enhanced with Pagination
+    ├── testset.py           # Enhanced with File Upload
+    ├── training_result.py
+    ├── evaluation.py        # Background Task Schemas
+    ├── sqe_results.py       # ✨ SQE Quality Schemas
+    └── token.py             # Authentication Schemas
+```
 
-4. **Model Layer** (`app/db/models.py`):
-   - SQLAlchemy ORM models
-   - Defines database tables and relationships
-   - Manages constraints and indices
+#### **Key Backend Patterns**
+1. **API Layer**: Route handlers with authentication and validation
+2. **CRUD Layer**: Database operations with transaction management
+3. **Schema Layer**: Pydantic validation and serialization
+4. **Model Layer**: SQLAlchemy ORM with relationships
+5. **Core Services**: Security, configuration, and background tasks
 
-5. **Core Services** (`app/core`):
-   - Configuration management
-   - Authentication and security
-   - Dependency injection
+### **Frontend Architecture (React + TypeScript)**
 
-### Frontend (React + TypeScript)
+#### **Component-Based Architecture**
+```
+📁 src/
+├── 🎨 components/           # Reusable UI Components
+│   ├── Auth/                # Authentication Components
+│   ├── common/              # Shared Components
+│   │   ├── StatCard.tsx     # Dashboard Statistics
+│   │   ├── ActivityTable.tsx # Enhanced Activity Display
+│   │   └── DashboardChart.tsx # Interactive Charts
+│   ├── Evaluation/          # Evaluation Workflow
+│   ├── Layout/              # Navigation & Layout
+│   ├── ModelVersion/        # Model Management
+│   ├── SQEResults/          # ✨ Quality Engineering
+│   │   ├── SQEResultsTable.tsx # Professional Data Table
+│   │   ├── SQEAnalyticsCharts.tsx # Interactive Analytics
+│   │   └── SQEResultForm.tsx # User-Friendly Forms
+│   ├── Testsets/            # Test Dataset Management
+│   └── TrainingResult/      # Performance Tracking
+├── 📄 pages/                # Top-Level Page Components
+│   ├── Dashboard.tsx        # System Overview
+│   ├── ModelVersions.tsx    # Model Management
+│   ├── SQEResults.tsx       # ✨ Quality Dashboard
+│   └── [other pages...]
+├── 🔌 services/             # API Integration Layer
+│   ├── api.ts               # Axios Configuration
+│   ├── auth.ts              # Authentication Service
+│   ├── modelVersionService.ts
+│   ├── sqeService.ts        # ✨ SQE API Integration
+│   └── [other services...]
+├── 🎭 contexts/             # State Management
+│   └── AuthContext.tsx      # Authentication State
+├── 📝 types/                # TypeScript Definitions
+│   ├── index.ts             # Core Types
+│   ├── modelVersion.ts
+│   ├── sqe.ts               # ✨ SQE Type Definitions
+│   └── [other types...]
+└── 🛠️ utils/               # Utility Functions
+```
 
-The frontend follows a component-based architecture:
+#### **Key Frontend Patterns**
+1. **Component Architecture**: Reusable, typed components
+2. **Service Layer**: API abstraction with error handling
+3. **Context Management**: Global state with React Context
+4. **Type Safety**: Comprehensive TypeScript integration
+5. **UI/UX**: Argon Dashboard professional styling
 
-1. **Pages** (`src/pages`):
-   - Top-level page components
-   - Handle routing and main layout
-   - Integrate smaller components
+## 🚀 **Latest Enhancements (06/06/2025)**
 
-2. **Components** (`src/components`):
-   - Reusable UI components
-   - Form components for data input
-   - Dialog components for modal interactions
+### **✨ Enhanced SQE Results Module**
 
-3. **Services** (`src/services`):
-   - API client for backend communication
-   - Authentication and state management
-   - Error handling and retry logic
+#### **🧠 Intelligent Critical Issues Logic**
+- **Language Pair-Based Counting**: Each language pair contributes maximum 1 critical issue
+- **Latest Result Priority**: Based on most recent `test_date` for accurate assessment
+- **Smart Database Queries**: Optimized counting avoiding complex aggregations
+- **Professional UI Status**: Meaningful messages replacing percentage displays
 
-4. **Contexts** (`src/contexts`):
-   - React context providers
-   - Shared state management
-   - Authentication context
+#### **🎨 Professional UI/UX Improvements**
+- **Icon Design Enhancement**: Removed shadows with `noIconShadow` prop
+- **Educational Tooltips**: User guidance explaining Critical Issues logic
+- **Dynamic Status Messages**: Context-aware alerts based on critical count
+- **Enhanced Visual Design**: Clean, professional appearance throughout
 
-5. **Types** (`src/types`):
-   - TypeScript interfaces and types
-   - Shared type definitions
-   - Matches backend schema definitions
+#### **📊 Advanced Analytics Features**
+- **Language Pair Filtering**: Score Distribution charts with granular filtering
+- **Interactive Dashboard**: Real-time chart updates based on filter selections
+- **Visual Indicators**: Color-coded filter status (Green for "All", Blue for specific)
+- **Empty State Handling**: Professional empty states for filtered views
 
-## Recent Changes and Improvements
+### **🔧 Technical Architecture Improvements**
 
-### User Approval System
+#### **Backend Enhancements**
+```python
+# Enhanced SQE Results CRUD (crud_sqe_results.py)
+def _count_critical_language_pairs(self, db: Session) -> int:
+    """Count language pairs with critical issues in latest SQE result"""
+    
+def _language_pair_has_critical_issues(self, db: Session, language_pair_id: int) -> bool:
+    """Check if language pair has critical issues in latest result"""
+    
+def get_overall_stats(self, db: Session) -> SQEOverallStats:
+    """Enhanced statistics with intelligent critical counting"""
+```
 
-#### Backend Changes:
-- Added `status` field to User model (`active`, `pending`, `rejected`)
-- Modified registration endpoint to set status based on role
-- Added `/users/pending` endpoint to list pending users
-- Implemented `/users/approve/{user_id}` endpoint for user approval
-- Enhanced login endpoint to handle pending/rejected user states
+#### **Frontend Enhancements**
+```typescript
+// Enhanced StatCard Component (StatCard.tsx)
+interface StatCardProps {
+  noIconShadow?: boolean; // New prop for clean icon appearance
+}
 
-#### Frontend Changes:
-- Updated User interface to include status field
-- Added pending approvals section to User Management page
-- Implemented approval/rejection UI with confirmation dialogs
-- Enhanced signup form with approval requirement messaging
-- Added appropriate error handling for authentication states
+// Enhanced SQE Analytics (SQEAnalyticsCharts.tsx)
+const [languagePairFilter, setLanguagePairFilter] = useState<number | ''>('');
+// Language pair filtering for Score Distribution charts
+```
 
-### Data Export Functionality
+### **📈 Performance & Reliability Improvements**
 
-#### Backend Changes:
-- Added `/model-versions/export/{lang_pair_id}` endpoint
-- Implemented Excel export with pandas and XlsxWriter
-- Added Markdown export alternative format
-- Enhanced response handling for file downloads
-- Fixed CRUD function naming conventions
+#### **Database Optimization**
+- **Efficient Queries**: Language Pair → ModelVersion → SQEResult navigation
+- **Proper Indexing**: Strategic indexes for analytics queries
+- **Query Performance**: Optimized critical issues counting logic
+- **Relationship Handling**: Enhanced foreign key management
 
-#### Frontend Changes:
-- Added "Export Data" button for admin users
-- Implemented export format selection dialog
-- Added loading state indicators during export
-- Enhanced UI feedback for successful exports
+#### **UI/UX Optimization**
+- **Responsive Design**: Mobile-optimized filter controls
+- **Error Handling**: Comprehensive validation and edge case management
+- **Loading States**: Professional progress indicators
+- **Memory Management**: Efficient data loading and refresh
 
-### State Persistence Enhancements
+## 📝 **Development Standards & Best Practices**
 
-#### Frontend Changes:
-- Implemented localStorage for saving selected language pair
-- Enhanced URL parameter handling to maintain state
-- Modified navigation to preserve relevant parameters
-- Added state restoration when returning to Model Versions page
-- Improved back navigation from detail pages
+### **🐍 Backend Standards (Python/FastAPI)**
 
-## Coding Standards
+#### **Code Quality Standards**
+```python
+# Follow PEP 8 with Black formatting
+def create_sqe_result(db: Session, *, obj_in: SQEResultCreate, user_id: int) -> SQEResult:
+    """Create new SQE result with validation.
+    
+    Args:
+        db: Database session
+        obj_in: SQE result data from client
+        user_id: ID of user creating the result
+        
+    Returns:
+        Created SQE result with relationships
+        
+    Raises:
+        ValidationError: If data validation fails
+        IntegrityError: If database constraints violated
+    """
+    # Implementation with proper error handling
+```
 
-### Backend
-- Follow PEP 8 style guidelines
-- Use type hints for function parameters and return values
-- Document public functions and classes with docstrings
-- Use meaningful variable and function names
-- Handle exceptions properly and provide informative error messages
+#### **Essential Patterns**
+- **Type Hints**: All functions must have complete type annotations
+- **Docstrings**: Google-style docstrings for all public functions
+- **Error Handling**: Comprehensive exception management
+- **Logging**: Strategic logging at INFO/DEBUG/ERROR levels
+- **Testing**: Unit tests for all CRUD operations
 
-### Frontend
-- Follow TypeScript best practices
-- Use functional components with hooks
-- Properly type all props and state
-- Use consistent naming conventions
-- Extract reusable logic into custom hooks
-- Keep components focused on a single responsibility
+### **⚛️ Frontend Standards (React/TypeScript)**
 
-## Common Pitfalls
+#### **Component Architecture**
+```typescript
+// Functional components with proper typing
+interface SQEResultFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  mode: 'create' | 'edit';
+  editData?: SQEResult | null;
+}
 
-1. **Database Migrations**: When changing the database schema, remember to update:
-   - SQLAlchemy models
-   - Pydantic schemas
-   - CRUD operations
-   - API endpoints that use the affected models
+const SQEResultForm: React.FC<SQEResultFormProps> = ({ 
+  open, onClose, onSuccess, mode, editData 
+}) => {
+  // Implementation with hooks and proper state management
+};
+```
 
-2. **Authentication Handling**: When working with authenticated endpoints:
-   - Always check appropriate permissions
-   - Use the correct dependency for role verification
-   - Test with different user roles
+#### **Best Practices**
+- **TypeScript Strict Mode**: Complete type safety throughout
+- **Hook Patterns**: Custom hooks for reusable logic
+- **Error Boundaries**: Comprehensive error handling
+- **Performance**: Memoization and optimization patterns
+- **Accessibility**: ARIA labels and keyboard navigation
 
-3. **Form Validation**: When creating or modifying forms:
-   - Update Yup validation schemas
-   - Ensure validation errors display correctly
-   - Test edge cases and error states
+## 🛠 **Development Workflow**
 
-4. **State Management**: When handling state across components:
-   - Consider using React Context for shared state
-   - Use localStorage for persistent preferences
-   - Preserve important state parameters in the URL
+### **Feature Development Process**
+```mermaid
+graph LR
+    A[Feature Branch] --> B[Backend Schema]
+    B --> C[Database Models]
+    C --> D[CRUD Operations]
+    D --> E[API Endpoints]
+    E --> F[Frontend Types]
+    F --> G[UI Components]
+    G --> H[Integration Testing]
+    H --> I[Pull Request]
+```
 
-## Testing
+### **Database Schema Changes**
+```bash
+# 1. Update SQLAlchemy models
+# backend/app/db/models.py
 
-- Backend tests are located in `backend/tests/`
-- Frontend tests are located in `frontend/src/__tests__/`
-- Run backend tests with pytest
-- Run frontend tests with Jest
+# 2. Create migration
+cd backend
+alembic revision --autogenerate -m "Add SQE results enhancements"
 
-## CI/CD
+# 3. Update Pydantic schemas
+# backend/app/schemas/sqe_results.py
 
-The project uses a simple CI/CD process:
-1. Linting and type checking
-2. Unit tests
-3. Integration tests
-4. Build and deployment
+# 4. Update CRUD operations
+# backend/app/crud/crud_sqe_results.py
 
-## Deployment
+# 5. Update API endpoints
+# backend/app/api/v1/endpoints/sqe_results.py
 
-See the [Installation Guide](INSTALLATION.md) for detailed deployment instructions.
+# 6. Apply migration
+alembic upgrade head
+```
 
-## Version Control
+### **Adding New Features**
+```bash
+# Example: Adding new analytics endpoint
 
-- Use feature branches for new development
-- Create pull requests for code review
-- Include tests for new features
-- Keep commits focused and descriptive 
+# 1. Backend implementation
+touch backend/app/api/v1/endpoints/analytics.py
+touch backend/app/crud/crud_analytics.py  
+touch backend/app/schemas/analytics.py
+
+# 2. Frontend implementation
+mkdir frontend/src/components/Analytics
+touch frontend/src/components/Analytics/AnalyticsChart.tsx
+touch frontend/src/services/analyticsService.ts
+touch frontend/src/types/analytics.ts
+
+# 3. Integration
+# Add route to frontend/src/App.tsx
+# Add navigation to frontend/src/components/Layout/MainLayout.tsx
+```
+
+## 🚨 **Common Development Pitfalls**
+
+### **⚠️ Backend Pitfalls**
+1. **Authentication Bypass**: Always use `deps.get_current_active_user` dependency
+2. **SQL Injection**: Use SQLAlchemy ORM, never raw SQL strings
+3. **Memory Leaks**: Properly close database sessions in background tasks
+4. **Type Mismatches**: Ensure Pydantic schemas match SQLAlchemy models
+
+### **⚠️ Frontend Pitfalls**
+1. **State Mutations**: Use immutable updates, avoid direct state modification
+2. **Memory Leaks**: Cleanup subscriptions and timers in useEffect
+3. **Type Safety**: Avoid `any` types, use proper TypeScript interfaces
+4. **Performance**: Use React.memo and useMemo for expensive operations
+
+### **🔧 Quick Fixes**
+```bash
+# Backend type checking
+cd backend && mypy app/
+
+# Frontend type checking  
+cd frontend && npx tsc --noEmit
+
+# Code formatting
+cd backend && black app/
+cd frontend && npx prettier --write src/
+
+# Dependency updates
+cd backend && pip list --outdated
+cd frontend && npm audit
+```
+
+## 🧪 **Testing Strategy**
+
+### **Backend Testing**
+```python
+# Test structure: backend/tests/
+tests/
+├── api/
+│   └── v1/
+│       └── test_sqe_results.py    # API endpoint tests
+├── crud/
+│   └── test_crud_sqe_results.py   # Database operation tests
+└── core/
+    └── test_security.py           # Security and auth tests
+
+# Run tests
+cd backend
+pytest tests/ -v --cov=app
+```
+
+### **Frontend Testing**
+```typescript
+// Test structure: frontend/src/__tests__/
+__tests__/
+├── components/
+│   └── SQEResults/
+│       └── SQEResultForm.test.tsx
+├── services/
+│   └── sqeService.test.ts
+└── utils/
+    └── validation.test.ts
+
+// Run tests
+cd frontend
+npm test -- --coverage
+```
+
+### **Integration Testing**
+```bash
+# Full system test
+./run.sh
+curl http://localhost:8000/api/v1/system/health
+curl http://localhost:3000
+```
+
+## 🚀 **Production Deployment**
+
+### **Environment Configuration**
+```bash
+# Production environment setup
+sudo ./install-prod-services.sh
+
+# Service management
+sudo systemctl status nmt-backend nmt-frontend-prod
+sudo journalctl -u nmt-backend -f
+```
+
+### **Database Management**
+```bash
+# Production database backup
+cp /var/lib/nmt-backend/nmt_release_management.db backup_$(date +%Y%m%d).db
+
+# Migration in production
+cd /opt/nmt-backend
+source venv/bin/activate
+alembic upgrade head
+```
+
+### **Monitoring & Maintenance**
+```bash
+# Log monitoring
+sudo tail -f /var/log/nmt-backend.log
+
+# Performance monitoring
+htop
+df -h /var/lib/nmt-backend/storage
+
+# Storage cleanup
+python /opt/nmt-backend/cleanup_temp_evaluations.py --dry-run --days-old 7
+```
+
+## 📊 **Performance Guidelines**
+
+### **Backend Performance**
+- **Database Indexing**: Proper indexes on foreign keys and filter columns
+- **Query Optimization**: Use SQLAlchemy relationship loading strategies  
+- **Pagination**: Server-side pagination for all list endpoints
+- **Caching**: Strategic caching for expensive computations
+- **Background Tasks**: Use FastAPI BackgroundTasks for long operations
+
+### **Frontend Performance**
+- **Code Splitting**: Dynamic imports for large components
+- **Memoization**: React.memo and useMemo for expensive renders
+- **Pagination**: Client-side pagination UI with server-side data
+- **Bundle Optimization**: Webpack optimization for production builds
+- **Image Optimization**: Proper image formats and lazy loading
+
+## 🔒 **Security Guidelines**
+
+### **Authentication & Authorization**
+```python
+# Always use dependency injection for auth
+@router.get("/sqe-results/")
+def get_sqe_results(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    # Implementation with proper auth checking
+```
+
+### **Input Validation**
+```python
+# Always validate with Pydantic schemas
+@router.post("/sqe-results/", response_model=SQEResult)
+def create_sqe_result(
+    *,
+    db: Session = Depends(get_db),
+    sqe_result_in: SQEResultCreate,  # Pydantic validation
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    # Safe, validated input processing
+```
+
+## 📚 **Documentation Standards**
+
+### **API Documentation**
+- **FastAPI Auto-docs**: Comprehensive endpoint documentation
+- **Schema Descriptions**: Clear field descriptions in Pydantic models
+- **Example Responses**: Sample data for all endpoints
+- **Error Codes**: Document all possible error responses
+
+### **Code Documentation**
+- **Inline Comments**: Explain complex business logic
+- **Architecture Decisions**: Document significant design choices
+- **Change Logs**: Update CHANGELOG.md for significant changes
+- **README Updates**: Keep installation and usage instructions current
+
+---
+
+**Developer Guide Version**: 7.1  
+**Last Updated**: 06/06/2025  
+**Status**: ✅ Production Ready - Complete Development Standards 
