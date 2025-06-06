@@ -1,0 +1,45 @@
+# Cursor IDE rules directory
+.cursor/rules/
+
+# Backend log files
+backend/logs/*.log
+
+# Python virtual environment
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+
+# Database files
+backend/*.db
+backend/*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (already in frontend/.gitignore but good to have at root)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+temp/ 
