@@ -16,7 +16,6 @@ import {
   Stack
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { register } from '../../services/api';
@@ -121,43 +120,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Box sx={{ width: '100%', minWidth: 350 }}>
-      {/* Header Section with Icon */}
-      <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            borderRadius: '50%', 
-            bgcolor: 'secondary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mr: 2
-          }}
-        >
-          <PersonAddIcon sx={{ color: 'white', fontSize: 24 }} />
-        </Box>
-        <Typography 
-          component="h1" 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 600,
-            color: 'text.primary',
-            mb: 0
-          }}
-        >
-          Sign Up
-        </Typography>
-      </Stack>
-      
+    <Box sx={{ width: '100%' }}>
       {/* Subtitle */}
       <Typography 
         variant="body1" 
         align="center" 
         sx={{ 
           color: 'text.secondary', 
-          mb: 3,
-          fontSize: '0.95rem'
+          mb: 2,
+          fontSize: '0.9rem'
         }}
       >
         Create your account to get started
@@ -166,7 +137,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
       {successMessage && (
         <Alert 
           severity="success" 
-          sx={{ mb: 2, width: '100%', borderRadius: 2 }}
+          sx={{ mb: 2, width: '100%', borderRadius: 2, fontSize: '0.85rem' }}
         >
           {successMessage}
         </Alert>
@@ -175,7 +146,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
       {error && (
         <Alert 
           severity="error" 
-          sx={{ mb: 2, width: '100%', borderRadius: 2 }}
+          sx={{ mb: 2, width: '100%', borderRadius: 2, fontSize: '0.85rem' }}
         >
           {error}
         </Alert>
@@ -187,203 +158,210 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
         sx={{ width: '100%' }}
       >
         <TextField
-          margin="normal"
+          margin="dense"
           required
           fullWidth
           id="username"
           label="Username"
           name="username"
+          size="small"
           autoComplete="username"
           value={formik.values.username}
           onChange={formik.handleChange}
           error={formik.touched.username && Boolean(formik.errors.username)}
           helperText={formik.touched.username && formik.errors.username}
           sx={{
-            mb: 2,
+            mb: 1.5,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
-        
+
         <TextField
-          margin="normal"
+          margin="dense"
           required
           fullWidth
           id="email"
           label="Email Address"
           name="email"
+          size="small"
           autoComplete="email"
           value={formik.values.email}
           onChange={formik.handleChange}
           error={formik.touched.email && Boolean(formik.errors.email)}
           helperText={formik.touched.email && formik.errors.email}
           sx={{
-            mb: 2,
+            mb: 1.5,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
-        
+
         <TextField
-          margin="normal"
+          margin="dense"
           required
           fullWidth
           name="password"
           label="Password"
           type="password"
           id="password"
+          size="small"
           autoComplete="new-password"
           value={formik.values.password}
           onChange={formik.handleChange}
           error={formik.touched.password && Boolean(formik.errors.password)}
           helperText={formik.touched.password && formik.errors.password}
           sx={{
-            mb: 2,
+            mb: 1.5,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
-        
+
         <TextField
-          margin="normal"
+          margin="dense"
           required
           fullWidth
           name="confirmPassword"
           label="Confirm Password"
           type="password"
           id="confirmPassword"
+          size="small"
           autoComplete="new-password"
           value={formik.values.confirmPassword}
           onChange={formik.handleChange}
           error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
           helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
           sx={{
-            mb: 2,
+            mb: 1.5,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
-        
-        {/* Role Selection */}
-        <FormControl 
-          fullWidth 
-          margin="normal"
-          error={formik.touched.role && Boolean(formik.errors.role)}
-          sx={{ 
-            mb: 2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              '&:hover fieldset': {
-                borderColor: 'primary.main',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
-              },
-            },
-          }}
-        >
-          <InputLabel id="role-select-label">Account Role</InputLabel>
-          <Select
-            labelId="role-select-label"
-            id="role"
-            name="role"
-            value={formik.values.role}
-            onChange={handleRoleChange}
-            label="Account Role"
-            endAdornment={
-              <Tooltip title="Select the appropriate role for your account. Higher roles (Release Manager & Admin) require approval from administrators.">
-                <IconButton size="small" sx={{ mr: 1 }}>
-                  <InfoIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            }
-          >
-            {roles.map((role) => (
-              <MenuItem key={role.value} value={role.value}>
-                <Box>
-                  <Typography variant="body1">{role.label}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {role.description}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            ))}
-          </Select>
-          {formik.touched.role && formik.errors.role && (
-            <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-              {formik.errors.role as string}
-            </Typography>
-          )}
-        </FormControl>
 
-        {formik.values.role !== 'member' && (
-          <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
-            This role requires admin approval after registration.
-          </Alert>
-        )}
-        
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <FormControl 
+            fullWidth 
+            required
+            size="small"
+            error={formik.touched.role && Boolean(formik.errors.role)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                '&:hover fieldset': {
+                  borderColor: 'primary.main',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: 'primary.main',
+                  borderWidth: '2px'
+                },
+              },
+              '& .MuiInputLabel-root': {
+                fontSize: '0.9rem',
+              },
+            }}
+          >
+            <InputLabel id="role-label">Role</InputLabel>
+            <Select
+              labelId="role-label"
+              id="role"
+              value={formik.values.role}
+              label="Role"
+              onChange={handleRoleChange}
+            >
+              {roles.map((role) => (
+                <MenuItem key={role.value} value={role.value}>
+                  {role.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          <Tooltip 
+            title={
+              <Box>
+                {roles.map((role) => (
+                  <Typography key={role.value} variant="body2" sx={{ mb: 0.5, fontSize: '0.8rem' }}>
+                    <strong>{role.label}:</strong> {role.description}
+                  </Typography>
+                ))}
+              </Box>
+            }
+            placement="left"
+          >
+            <IconButton size="small" sx={{ ml: 1 }}>
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
         <Button
           type="submit"
           fullWidth
           variant="contained"
           disabled={formik.isSubmitting}
-          sx={{ 
-            mb: 3,
+          sx={{
+            mb: 2,
             py: 1.5,
-            borderRadius: 2,
-            fontSize: '1rem',
+            borderRadius: 3,
+            fontSize: '0.95rem',
             fontWeight: 600,
             textTransform: 'none',
-            background: 'linear-gradient(45deg, #2e7d32 30%, #4caf50 90%)',
-            boxShadow: '0 3px 15px rgba(46, 125, 50, 0.3)',
+            background: 'linear-gradient(45deg, #9c27b0 30%, #ba68c8 90%)',
+            boxShadow: '0 3px 15px rgba(156, 39, 176, 0.3)',
             '&:hover': {
-              background: 'linear-gradient(45deg, #1b5e20 30%, #388e3c 90%)',
-              boxShadow: '0 4px 20px rgba(46, 125, 50, 0.4)',
+              background: 'linear-gradient(45deg, #7b1fa2 30%, #9c27b0 90%)',
+              boxShadow: '0 4px 20px rgba(156, 39, 176, 0.4)',
+              transform: 'translateY(-1px)'
             },
             '&:disabled': {
               background: 'rgba(0, 0, 0, 0.12)',
@@ -392,11 +370,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
         >
           {formik.isSubmitting ? (
             <Stack direction="row" alignItems="center" spacing={1}>
-              <CircularProgress size={20} color="inherit" />
+              <CircularProgress size={18} color="inherit" />
               <Typography variant="body2">Creating account...</Typography>
             </Stack>
           ) : (
-            'Sign Up'
+            'Create Account'
           )}
         </Button>
       </Box>

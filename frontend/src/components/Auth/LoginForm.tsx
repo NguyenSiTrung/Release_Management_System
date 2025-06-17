@@ -9,13 +9,11 @@ import {
   FormControlLabel,
   Checkbox,
   Link,
-  Divider,
   Stack
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from '../../contexts/AuthContext';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EmailIcon from '@mui/icons-material/Email';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
@@ -106,35 +104,7 @@ const LoginForm: React.FC = () => {
   });
 
   return (
-    <Box sx={{ width: '100%', minWidth: 350 }}>
-      {/* Header Section with Icon */}
-      <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
-        <Box 
-          sx={{ 
-            p: 1.5, 
-            borderRadius: '50%', 
-            bgcolor: 'primary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mr: 2
-          }}
-        >
-          <LockOutlinedIcon sx={{ color: 'white', fontSize: 24 }} />
-        </Box>
-        <Typography 
-          component="h1" 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 600,
-            color: 'text.primary',
-            mb: 0
-          }}
-        >
-          Sign In
-        </Typography>
-      </Stack>
-      
+    <Box sx={{ width: '100%' }}>      
       {/* Subtitle */}
       <Typography 
         variant="body1" 
@@ -142,10 +112,10 @@ const LoginForm: React.FC = () => {
         sx={{ 
           color: 'text.secondary', 
           mb: 3,
-          fontSize: '0.95rem'
+          fontSize: '0.9rem'
         }}
       >
-        Enter your username and password to sign in
+        Welcome back! Please enter your credentials
       </Typography>
       
       {/* Session Expired Alert */}
@@ -155,7 +125,8 @@ const LoginForm: React.FC = () => {
           sx={{ 
             mb: 2,
             width: '100%',
-            borderRadius: 2
+            borderRadius: 2,
+            fontSize: '0.85rem'
           }}
         >
           Your session has expired. Please sign in again.
@@ -169,7 +140,8 @@ const LoginForm: React.FC = () => {
           sx={{ 
             mb: 2,
             width: '100%',
-            borderRadius: 2
+            borderRadius: 2,
+            fontSize: '0.85rem'
           }}
         >
           {error}
@@ -188,29 +160,31 @@ const LoginForm: React.FC = () => {
           name="username"
           autoComplete="username"
           autoFocus
+          size="medium"
           value={formik.values.username}
           onChange={formik.handleChange}
           error={formik.touched.username && Boolean(formik.errors.username)}
           helperText={formik.touched.username && formik.errors.username}
           InputProps={{
             startAdornment: (
-              <EmailIcon sx={{ color: 'action.active', mr: 1, fontSize: 20 }} />
+              <EmailIcon sx={{ color: 'action.active', mr: 1, fontSize: 18 }} />
             ),
           }}
           sx={{
             mb: 2,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
@@ -224,6 +198,7 @@ const LoginForm: React.FC = () => {
           label="Password"
           type="password"
           id="password"
+          size="medium"
           autoComplete="current-password"
           value={formik.values.password}
           onChange={formik.handleChange}
@@ -231,23 +206,24 @@ const LoginForm: React.FC = () => {
           helperText={formik.touched.password && formik.errors.password}
           InputProps={{
             startAdornment: (
-              <VpnKeyIcon sx={{ color: 'action.active', mr: 1, fontSize: 20 }} />
+              <VpnKeyIcon sx={{ color: 'action.active', mr: 1, fontSize: 18 }} />
             ),
           }}
           sx={{
             mb: 2,
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
               '&:hover fieldset': {
                 borderColor: 'primary.main',
               },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
+                borderWidth: '2px'
               },
             },
             '& .MuiInputLabel-root': {
-              fontSize: '1rem',
+              fontSize: '0.9rem',
             },
           }}
         />
@@ -259,10 +235,11 @@ const LoginForm: React.FC = () => {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               color="primary"
+              size="small"
             />
           }
           label={
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
               Remember me for 30 days
             </Typography>
           }
@@ -276,10 +253,10 @@ const LoginForm: React.FC = () => {
           variant="contained"
           disabled={formik.isSubmitting}
           sx={{ 
-            mb: 3,
+            mb: 2,
             py: 1.5,
-            borderRadius: 2,
-            fontSize: '1rem',
+            borderRadius: 3,
+            fontSize: '0.95rem',
             fontWeight: 600,
             textTransform: 'none',
             background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
@@ -287,6 +264,7 @@ const LoginForm: React.FC = () => {
             '&:hover': {
               background: 'linear-gradient(45deg, #1565c0 30%, #1e88e5 90%)',
               boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
+              transform: 'translateY(-1px)'
             },
             '&:disabled': {
               background: 'rgba(0, 0, 0, 0.12)',
@@ -295,7 +273,7 @@ const LoginForm: React.FC = () => {
         >
           {formik.isSubmitting ? (
             <Stack direction="row" alignItems="center" spacing={1}>
-              <CircularProgress size={20} color="inherit" />
+              <CircularProgress size={18} color="inherit" />
               <Typography variant="body2">Signing in...</Typography>
             </Stack>
           ) : (
@@ -303,16 +281,9 @@ const LoginForm: React.FC = () => {
           )}
         </Button>
         
-        {/* Divider */}
-        <Divider sx={{ my: 2 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary', px: 2 }}>
-            or
-          </Typography>
-        </Divider>
-        
         {/* Sign Up Link */}
         <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
             Don't have an account?{' '}
             <Link 
               href="#" 
@@ -331,7 +302,7 @@ const LoginForm: React.FC = () => {
                 }
               }}
             >
-              Sign up
+              Sign up here
             </Link>
           </Typography>
         </Box>
