@@ -1,11 +1,11 @@
-# Installation Guide - NMT Release Management System v7.1
+# Installation Guide - NMT Release Management System v7.1.1
 
 ## 🎯 **Production-Ready Installation**
 
 This comprehensive guide covers installation and deployment of the NMT Release Management System in both development and production environments.
 
 **System Status**: ✅ Production Ready with 7 Complete Modules  
-**Latest Version**: 7.1 - Enhanced SQE Results with Intelligent Analytics
+**Latest Version**: 7.1.1 - Critical Bug Fixes + Enhanced SQE Results with Intelligent Analytics
 
 ## 📋 **Prerequisites**
 
@@ -281,6 +281,7 @@ sudo systemctl reload nginx
 ```bash
 cd backend
 
+# Method 1: If alembic.ini exists (standard Alembic setup)
 # Install Alembic (if not already installed)
 pip install alembic
 
@@ -292,6 +293,13 @@ alembic revision --autogenerate -m "Description"
 
 # Apply migration
 alembic upgrade head
+
+# Method 2: Manual migration (for this project setup)
+# For immediate fix of model deletion issue:
+python3 run_migration.py
+
+# Or apply SQL directly for production:
+sqlite3 nmt_release_management.db < migration_006.sql
 ```
 
 ### **Storage Management**
@@ -482,6 +490,6 @@ sqlite3 nmt_release_management.db "ANALYZE; VACUUM;"
 
 ---
 
-**Installation Guide Version**: 7.1  
-**Last Updated**: 06/06/2025  
-**Status**: ✅ Production Ready - Complete Setup Instructions 
+**Installation Guide Version**: 7.1.1  
+**Last Updated**: 17/06/2025  
+**Status**: ✅ Production Ready - Complete Setup Instructions + Migration Fixes 

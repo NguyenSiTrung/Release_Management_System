@@ -1,5 +1,36 @@
 # NMT Management System - Changelog và Tổng Hợp Cập Nhật
 
+## 🔧 BUG FIX RELEASE - Phiên Bản 7.1.1 - Ngày 17/06/2025
+
+### 🐛 **CRITICAL FIX: Model Version Deletion Issue**
+
+**Đã khắc phục lỗi nghiêm trọng ngăn cản việc xóa model version khi có SQE results liên quan.**
+
+#### **Vấn đề Đã Giải Quyết**
+- **Lỗi**: `sqlite3.IntegrityError: NOT NULL constraint failed: sqe_results.version_id`
+- **Nguyên nhân**: Thiếu CASCADE delete constraint trong foreign key relationship
+- **Ảnh hưởng**: Không thể xóa model version có SQE results, cản trở workflow maintenance
+
+#### **Giải Pháp Kỹ Thuật**
+- **Database Schema Fix**: Thêm `ondelete="CASCADE"` cho SQEResult foreign key
+- **ORM Enhancement**: Cập nhật relationship với `cascade="all, delete-orphan"`
+- **CRUD Logic**: Thêm explicit cleanup logic cho backward compatibility
+- **Migration**: Tạo migration script `006_fix_sqe_results_cascade_delete.py`
+- **Logging**: Comprehensive logging cho tracking deletion operations
+
+#### **Files Modified**
+- `backend/app/db/models.py` - Enhanced foreign key constraints
+- `backend/app/crud/crud_model_version.py` - Improved deletion logic
+- `backend/alembic/versions/006_fix_sqe_results_cascade_delete.py` - Migration script
+
+#### **Production Impact**
+- ✅ **Data Integrity**: Proper cascade deletion maintains consistency
+- ✅ **User Experience**: Model versions can now be deleted seamlessly
+- ✅ **Maintenance**: Simplified cleanup workflows for administrators
+- ✅ **Reliability**: Robust error handling with comprehensive logging
+
+---
+
 ## 🎉 PRODUCTION READY - Phiên Bản 6.0 - Ngày 06/06/2025
 
 ### 🚀 **TRẠNG THÁI: PRODUCTION READY**

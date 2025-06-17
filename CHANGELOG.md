@@ -1,5 +1,77 @@
 # NMT Management System - Changelog
 
+## [7.1.1] - 2025-06-17 - CRITICAL FIX RELEASE 🔧
+
+### 🔧 **CRITICAL BUG FIX: Model Version Deletion Issue**
+
+**Fixed critical database integrity error that prevented model version deletion when SQE results existed.**
+
+#### **🐛 Issue Resolved**
+- **Problem**: `sqlite3.IntegrityError: NOT NULL constraint failed: sqe_results.version_id` when deleting model versions
+- **Root Cause**: Missing CASCADE delete constraint on SQE results foreign key
+- **Impact**: Model versions with SQE results could not be deleted, blocking cleanup workflows
+
+#### **✅ Fix Implementation**
+- **Database Schema**: Added `ondelete="CASCADE"` to SQE results foreign key constraint
+- **ORM Relationships**: Enhanced ModelVersion relationship with `cascade="all, delete-orphan"`
+- **CRUD Logic**: Improved deletion logic with explicit SQE results cleanup
+- **Migration**: Created migration script `006_fix_sqe_results_cascade_delete.py`
+- **Logging**: Added comprehensive logging for deletion tracking
+
+#### **🔄 Technical Changes**
+
+**Backend Database Models** (`app/db/models.py`):
+```python
+# Fixed SQE Results foreign key with CASCADE delete
+version_id = Column(Integer, ForeignKey("model_versions.version_id", ondelete="CASCADE"), nullable=False)
+
+# Enhanced ModelVersion relationship
+sqe_result = relationship("SQEResult", back_populates="model_version", cascade="all, delete-orphan")
+```
+
+**Enhanced CRUD Operations** (`app/crud/crud_model_version.py`):
+```python
+def remove(db: Session, *, version_id: int) -> ModelVersion:
+    # Added explicit SQE results cleanup for backward compatibility
+    try:
+        sqe_results = db.query(SQEResult).filter(SQEResult.version_id == version_id).all()
+        if sqe_results:
+            logger.info(f"Deleting {len(sqe_results)} SQE result(s) for model version {version_id}")
+            for sqe_result in sqe_results:
+                db.delete(sqe_result)
+    except Exception as e:
+        logger.warning(f"Error deleting SQE results for model version {version_id}: {e}")
+```
+
+**Database Migration** (`alembic/versions/006_fix_sqe_results_cascade_delete.py`):
+- SQLite-compatible migration using `batch_alter_table`
+- Proper constraint recreation with CASCADE delete
+- Rollback capability for downgrade operations
+
+#### **📋 Deployment Instructions**
+
+**For Existing Production Systems:**
+1. **Backup Database**: `cp nmt_release_management.db nmt_release_management.db.backup`
+2. **Apply Code Changes**: Deploy updated backend code
+3. **Run Migration**: Execute migration script or SQL commands
+4. **Verify Fix**: Test model version deletion functionality
+
+**Migration Script** (for manual execution):
+```bash
+# Create and run migration script
+cd backend/
+python3 run_migration.py  # (script provided in fix)
+```
+
+#### **🎯 Benefits**
+- ✅ **Data Consistency**: Proper cascade deletion maintains database integrity
+- ✅ **User Experience**: Model versions can now be deleted without errors
+- ✅ **Maintenance**: Simplified cleanup workflows for administrators
+- ✅ **Reliability**: Robust error handling with comprehensive logging
+- ✅ **Backward Compatibility**: Supports existing databases without data loss
+
+---
+
 ## [7.1.0] - 2025-06-06 - ENHANCED ANALYTICS RELEASE 🎯
 
 ### 🎯 **MAJOR ENHANCEMENT: Intelligent Critical Issues Logic**

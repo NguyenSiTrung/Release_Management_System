@@ -1,13 +1,16 @@
-from typing import Optional, List
 import os
 import shutil
+import logging
+from typing import List, Optional
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from app.db.models import ModelVersion
+from app.db.models import ModelVersion, SQEResult
 from app.schemas.model_version import ModelVersionCreate, ModelVersionUpdate
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 def count_model_versions(
     db: Session, *, lang_pair_id: Optional[int] = None
@@ -177,6 +180,18 @@ def update(
 def remove(db: Session, *, version_id: int) -> ModelVersion:
     obj = db.query(ModelVersion).get(version_id)
     if obj:
+        try:
+            # Delete associated SQE results first (if migration hasn't been applied yet)
+            sqe_results = db.query(SQEResult).filter(SQEResult.version_id == version_id).all()
+            if sqe_results:
+                logger.info(f"Deleting {len(sqe_results)} SQE result(s) for model version {version_id}")
+                for sqe_result in sqe_results:
+                    db.delete(sqe_result)
+                    
+        except Exception as e:
+            logger.warning(f"Error deleting SQE results for model version {version_id}: {e}")
+            # Continue with model version deletion as cascade delete might handle this
+        
         # Delete finetuned model files if they exist
         if obj.model_file_path_on_server and os.path.exists(obj.model_file_path_on_server):
             os.remove(obj.model_file_path_on_server)

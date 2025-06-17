@@ -1,9 +1,10 @@
-# NMT Release Management System v7.1 - Production Ready
+# NMT Release Management System v7.1.1 - Production Ready
 
 ## 🎉 **PRODUCTION READY STATUS - All 7 Modules Complete**
 
 The NMT (Neural Machine Translation) Release Management System is a **comprehensive production-ready platform** designed to manage the complete lifecycle of machine translation models with professional UI/UX and enhanced analytics capabilities.
 
+**Latest Critical Fix (17/06/2025)**: Fixed model version deletion issue with SQE results cascade delete  
 **Latest Enhancement (06/06/2025)**: Enhanced SQE Results Module with intelligent Critical Issues logic and advanced analytics features.
 
 ## 🌟 **Key Features**
@@ -243,6 +244,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Author**: trungns_ares  
-**Version**: 7.1 - Production Ready with Enhanced Analytics  
-**Last Updated**: 06/06/2025  
-**Status**: ✅ PRODUCTION READY - All Modules Complete 
+**Version**: 7.1.1 - Production Ready with Critical Fixes  
+**Last Updated**: 17/06/2025  
+**Status**: ✅ PRODUCTION READY - All Modules Complete + Bug Fixes 

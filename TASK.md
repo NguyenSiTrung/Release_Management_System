@@ -1,10 +1,10 @@
-# Task Management - NMT Release Management System v7.1
+# Task Management - NMT Release Management System v7.1.1
 
 ## 🎉 **PRODUCTION READY STATUS**
 
 **System Status**: ✅ **All 7 Modules Complete - Production Ready**  
-**Latest Version**: 7.1 - Enhanced SQE Results with Intelligent Analytics  
-**Last Updated**: 06/06/2025
+**Latest Version**: 7.1.1 - Critical Bug Fixes + Enhanced SQE Results with Intelligent Analytics  
+**Last Updated**: 17/06/2025
 
 ## ✅ **Completed Production Modules (7/7)**
 
@@ -134,9 +134,16 @@
 4. **Mobile Optimization**: Progressive Web App features
 5. **Advanced Security**: Multi-factor authentication
 
-## 📈 **Latest Achievements (06/06/2025)**
+## 📈 **Latest Achievements (17/06/2025)**
 
-### **✨ Enhanced SQE Results Module**
+### **🔧 Critical Bug Fix (17/06/2025)**
+- [x] **Model Version Deletion Issue**: Fixed `sqlite3.IntegrityError` when deleting model versions with SQE results
+- [x] **Database Schema Enhancement**: Added CASCADE delete constraints for proper foreign key handling
+- [x] **ORM Relationships**: Enhanced SQLAlchemy relationships with proper cascade options
+- [x] **Migration Support**: Created migration script for existing databases
+- [x] **Backward Compatibility**: Maintained data integrity while fixing constraint issues
+
+### **✨ Enhanced SQE Results Module (06/06/2025)**
 - [x] **Intelligent Critical Issues Logic**: Language pair-based counting system
 - [x] **Professional UI Enhancements**: Clean design with educational tooltips
 - [x] **Advanced Analytics**: Interactive charts with granular filtering
@@ -187,8 +194,8 @@
 
 ---
 
-**Status**: ✅ **PRODUCTION READY - No Outstanding Critical Tasks**  
+**Status**: ✅ **PRODUCTION READY - Critical Issues Fixed**  
 **Next Review**: Weekly maintenance and user feedback collection  
-**Version**: 7.1 - Enhanced SQE Results with Intelligent Analytics  
+**Version**: 7.1.1 - Critical Bug Fixes + Enhanced SQE Results with Intelligent Analytics  
 **Total Development Time**: 12+ months  
-**System Maturity**: Production-Grade Enterprise Application
+**System Maturity**: Production-Grade Enterprise Application with Robust Error Handling

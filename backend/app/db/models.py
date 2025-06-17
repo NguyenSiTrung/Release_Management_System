@@ -66,7 +66,7 @@ class ModelVersion(Base):
     training_results = relationship("TrainingResult", back_populates="model_version", cascade="all, delete-orphan")
     release_note = relationship("ReleaseNote", back_populates="model_version", uselist=False, cascade="all, delete-orphan")
     evaluation_jobs = relationship("EvaluationJob", back_populates="model_version", cascade="all, delete-orphan")
-    sqe_result = relationship("SQEResult", back_populates="model_version")
+    sqe_result = relationship("SQEResult", back_populates="model_version", cascade="all, delete-orphan")
 
 class Testset(Base):
     __tablename__ = "testsets"
@@ -170,7 +170,7 @@ class SQEResult(Base):
     __tablename__ = "sqe_results"
     
     sqe_result_id = Column(Integer, primary_key=True, index=True)
-    version_id = Column(Integer, ForeignKey("model_versions.version_id"), nullable=False)
+    version_id = Column(Integer, ForeignKey("model_versions.version_id", ondelete="CASCADE"), nullable=False)
     
     # Core SQE metrics
     average_score = Column(Float, nullable=False)  # 0.0 - 10.0

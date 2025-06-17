@@ -264,9 +264,13 @@ graph LR
 # 1. Update SQLAlchemy models
 # backend/app/db/models.py
 
-# 2. Create migration
+# 2. Create migration (if alembic.ini exists)
 cd backend
 alembic revision --autogenerate -m "Add SQE results enhancements"
+
+# OR create manual migration (if no alembic.ini)
+# Create migration file in alembic/versions/
+# Use proper batch_alter_table for SQLite compatibility
 
 # 3. Update Pydantic schemas
 # backend/app/schemas/sqe_results.py
@@ -279,6 +283,7 @@ alembic revision --autogenerate -m "Add SQE results enhancements"
 
 # 6. Apply migration
 alembic upgrade head
+# OR run manual migration script for this project
 ```
 
 ### **Adding New Features**
@@ -308,6 +313,8 @@ touch frontend/src/types/analytics.ts
 2. **SQL Injection**: Use SQLAlchemy ORM, never raw SQL strings
 3. **Memory Leaks**: Properly close database sessions in background tasks
 4. **Type Mismatches**: Ensure Pydantic schemas match SQLAlchemy models
+5. **Foreign Key Constraints**: Always include `ondelete` clause for foreign keys to prevent constraint violations
+6. **Cascade Relationships**: Use appropriate cascade options in SQLAlchemy relationships
 
 ### **⚠️ Frontend Pitfalls**
 1. **State Mutations**: Use immutable updates, avoid direct state modification
@@ -330,6 +337,16 @@ cd frontend && npx prettier --write src/
 # Dependency updates
 cd backend && pip list --outdated
 cd frontend && npm audit
+
+# Database migration (manual for this project)
+cd backend && python3 run_migration.py
+
+# Fix foreign key constraint issues
+cd backend && python3 -c "
+from app.db.database import engine
+from app.db.models import Base
+Base.metadata.create_all(bind=engine)
+"
 ```
 
 ## 🧪 **Testing Strategy**
