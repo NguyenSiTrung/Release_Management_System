@@ -1,11 +1,11 @@
-# Quick Start Guide - NMT Release Management System v7.1
+# Quick Start Guide - NMT Release Management System v7.1.2
 
 ## 🚀 **Get Running in 5 Minutes**
 
 This guide provides the fastest path to get the NMT Release Management System up and running with all 7 production modules.
 
 **System Status**: ✅ Production Ready - All Modules Complete  
-**Latest Version**: 7.1 - Enhanced SQE Results with Intelligent Analytics
+**Latest Version**: 7.1.2 - Enhanced Authentication UI + Intelligent Analytics
 
 ## ⚡ **Lightning Start**
 
@@ -26,13 +26,14 @@ chmod +x run.sh
 ### **3. First Login**
 ```
 1. Go to http://localhost:3000
-2. Click "Sign Up" 
-3. Create admin account:
+2. Experience the new streamlined authentication interface
+3. Click "Sign Up" tab
+4. Create admin account (no scrolling required):
    - Username: admin
    - Email: admin@example.com  
    - Password: [your-secure-password]
    - Role: admin
-4. Auto-approved, login immediately
+5. Auto-approved, switch to "Login" tab and login immediately
 ```
 
 ## 🎯 **Core System Overview**
@@ -47,8 +48,9 @@ chmod +x run.sh
 7. **✨ Enhanced SQE Results** - Quality engineering with intelligent analytics
 
 ### **🎨 Professional UI Features**
-- **Argon Dashboard Design** - Modern gradient styling
-- **Responsive Layout** - Works on desktop, tablet, mobile
+- **Argon Dashboard Design** - Modern gradient styling with enhanced authentication
+- **Responsive Layout** - Works on desktop, tablet, mobile with optimized forms
+- **Streamlined Authentication** - No-scroll login/signup experience
 - **Interactive Charts** - Real-time data visualization
 - **Advanced Tables** - Sorting, filtering, pagination
 - **File Management** - Drag-and-drop upload/download
@@ -354,7 +356,7 @@ sudo systemctl status nmt-backend nmt-frontend-prod
 
 ---
 
-**Quick Start Guide Version**: 7.1  
-**Last Updated**: 06/06/2025  
-**Status**: ✅ Complete - All Features Ready  
+**Quick Start Guide Version**: 7.1.2  
+**Last Updated**: 17/06/2025  
+**Status**: ✅ Complete - All Features Ready + Enhanced UI  
 **Time to Productive**: ~5 minutes 

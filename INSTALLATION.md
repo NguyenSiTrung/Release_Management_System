@@ -1,11 +1,11 @@
-# Installation Guide - NMT Release Management System v7.1.1
+# Installation Guide - NMT Release Management System v7.1.2
 
 ## 🎯 **Production-Ready Installation**
 
 This comprehensive guide covers installation and deployment of the NMT Release Management System in both development and production environments.
 
 **System Status**: ✅ Production Ready with 7 Complete Modules  
-**Latest Version**: 7.1.1 - Critical Bug Fixes + Enhanced SQE Results with Intelligent Analytics
+**Latest Version**: 7.1.2 - Enhanced Authentication UI + Critical Bug Fixes + Intelligent Analytics
 
 ## 📋 **Prerequisites**
 
@@ -490,6 +490,6 @@ sqlite3 nmt_release_management.db "ANALYZE; VACUUM;"
 
 ---
 
-**Installation Guide Version**: 7.1.1  
+**Installation Guide Version**: 7.1.2  
 **Last Updated**: 17/06/2025  
-**Status**: ✅ Production Ready - Complete Setup Instructions + Migration Fixes 
+**Status**: ✅ Production Ready - Complete Setup Instructions + UI Enhancements 
